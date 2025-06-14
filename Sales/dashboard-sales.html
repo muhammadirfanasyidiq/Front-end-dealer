@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="css/sales.css">
+  <link rel="stylesheet" href="/asset/bootstrap/css/bootstrap.min.css">
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="header" id="header">
+    </div>
+
+
+    <div class="container-fluid mt-4 ">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Total Penjualan</span>
+            </div>
+            <h3 class="text-warning" id="penjualan"></h3>
+            <div class="progress mt-2" style="height: 5px;">
+              <div class="progress-bar bg-primary" style="width: 70%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Total Pelanggan</span>
+            </div>
+            <h3 class="text-warning" id="pelanggan"></h3>
+            <div class="progress mt-2" style="height: 5px;">
+              <div class="progress-bar bg-primary" style="width: 60%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Total Pendapatan</span>
+            </div>
+            <h3 class="text-warning" id="pendapatan"> </h3>
+            <div class="progress mt-2" style="height: 5px;">
+              <div class="progress-bar bg-primary" style="width: 80%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Komisi</span>
+            </div>
+            <h3 class="text-warning" id="komisi"> </h3>
+            <div class="progress mt-2" style="height: 5px;">
+              <div class="progress-bar bg-primary" style="width: 75%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card p-4" style="width: 100%; max-width: 100%;">
+            <h6 class="mb-3 text-center">Grafik Layanan Customer Service</h6>
+            <div style="height: 400px;">
+              <canvas id="salesChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const API_URL = "http://localhost:8080/salesdashboard"; // Ganti dengan URL API-mu
+    const token = sessionStorage.getItem("authToken");
+    async function fetchDashboardData() {
+      try {
+        const response = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Isi data ke elemen
+        document.querySelector("#penjualan").textContent = data.total_penjualan;
+        document.querySelector("#pelanggan").textContent = data.total_pelanggan;
+        document.querySelector("#pendapatan").textContent = formatRupiah(data.total_pendapatan);
+        document.querySelector("#komisi").textContent = formatRupiah(data.komisi);
+
+        // Update Chart
+        updateChart(data.grafik_penjualan.tahun_ini, data.grafik_penjualan.tahun_lalu);
+
+      } catch (error) {
+        console.error("Gagal mengambil data dashboard:", error);
+      }
+    }
+
+    function formatRupiah(value) {
+      return 'Rp. ' + (value / 1_000_000).toFixed(1) + ' jt';
+    }
+
+    let chart; // agar bisa diakses global
+    function updateChart(tahunIni, tahunLalu) {
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'],
+          datasets: [
+            {
+              label: 'Tahun ini',
+              backgroundColor: '#1e3a8a',
+              data: tahunIni
+            },
+            {
+              label: 'Tahun lalu',
+              backgroundColor: '#22c55e',
+              data: tahunLalu
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 120
+            }
+          }
+        }
+      });
+    }
+
+    // Panggil fungsi async
+    fetchDashboardData();
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="/asset/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+  <script src="js/sales.js" defer></script>
+  <!-- <script src="../asset/js/data.js" defer></script> -->
+
+</body>
+
+</html>
