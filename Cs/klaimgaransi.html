@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/cs.css">
+    <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+</head>
+
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+        <div class="container-fluid">
+            <div class="header" id="header"></div>
+
+            <!-- Form & Tombol dalam satu baris -->
+            <div class="filter-box">
+                <div class="filter-group">
+                    <label for="namapelanggan">Nama</label>
+                    <input type="text" id="namapelanggan" name="namapelanggan" placeholder=" Masukkan Nama">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-tahun">Pilih Model Mobil</label>
+                    <select id="filter-tahun">
+                        <option value="">Pilih Model</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-primary rounded" style="width: 150px;"
+                        onclick="applyFilter()">Filter</button>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-danger rounded" type="button" id="btnBatal"
+                        style="width: 150px;">Batal</button>
+                </div>
+            </div>
+
+
+            <div class="d-flex justify-content-end">
+                <!-- Tombol untuk membuka modal -->
+                <button id="btnTambahData" class="btn btn-primary mt-3" data-bs-toggle="modal"
+                    data-bs-target="#klaimModal">Ajukan Klaim</button>
+            </div>
+
+            <div class="my-3 p-3 bg-body rounded">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-2 mb-3 border-bottom">
+                    <h3>Data Klaim Garansi</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center align-middle text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Pelanggan</th>
+                                <th>Mobil</th>
+                                <th>Tanggal Klaim</th>
+                                <th>Deskripsi Klaim</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Ajukan Klaim -->
+        <div class="modal fade" id="klaimModal" tabindex="-1" aria-labelledby="klaimModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="klaimModalLabel">Ajukan Klaim</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="klaimForm">
+                            <input type="hidden" id="garansiId" name="garansi_id">
+                            <div class="row g-3">
+                                <!-- Kiri -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="selectNama" class="form-label">Nama Pelanggan</label>
+                                        <select id="selectNama" class="form-select" required>
+                                            <option value="">Pilih Pelanggan</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="selectModel" class="form-label">Model Mobil</label>
+                                        <select id="selectModel" class="form-select" required>
+                                            <option value="">Pilih Model</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                                <!-- Kanan -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="deskripsi" class="form-label">Deskripsi Klaim</label>
+                                        <textarea class="form-control" id="deskripsi" rows="5" required></textarea>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="tanggalKlaim" class="form-label">Tanggal Klaim</label>
+                                    <input type="date" class="form-control" id="tanggalKlaim" required>
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">Kirim Klaim</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            let allData = [];
+            let pelangganMobilData = [];
+
+            document.addEventListener("DOMContentLoaded", () => {
+                fetchData();                      // Tampilkan data di tabel
+                loadPelangganMobilFromKlaim();   // Isi dropdown pelanggan + model dari klaim
+            });
+
+            // Ambil dan tampilkan data klaim garansi ke tabel utama
+            async function fetchData() {
+                const token = sessionStorage.getItem("authToken");
+
+                try {
+                    const res = await fetch("http://localhost:8080/csklaimgaransi", {
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    });
+                    const json = await res.json();
+
+                    if (json.status) {
+                        allData = json.data;
+                        populateTable(allData);
+                        populateModelOptions(allData);
+                    } else {
+                        console.warn("Data tidak ditemukan:", json.message);
+                    }
+                } catch (err) {
+                    console.error("Gagal fetch data:", err);
+                }
+            }
+
+            // Tampilkan data ke dalam tabel
+            function populateTable(data) {
+                const tbody = document.querySelector("tbody");
+                tbody.innerHTML = "";
+
+                data.forEach(item => {
+                    tbody.innerHTML += `
+            <tr>
+                <td>${item.idklaim}</td>
+                <td>${item.nama}</td>
+                <td>${item.model}</td>
+                <td>${item.klaim_tanggal}</td>
+                <td>${item.klaim_deskripsi}</td>
+                <td>${item.klaim_status}</td>
+            </tr>
+        `;
+                });
+            }
+
+
+
+
+
+
+            // Isi filter dropdown model mobil (filter di atas tabel)
+            function populateModelOptions(data) {
+                const select = document.getElementById("filter-tahun");
+                const models = [...new Set(data.map(item => item.model))];
+
+                select.innerHTML = `<option value="">Pilih Model</option>`;
+                models.forEach(model => {
+                    select.innerHTML += `<option value="${model}">${model}</option>`;
+                });
+            }
+
+            // Filter tabel berdasarkan nama pelanggan & model mobil
+            function applyFilter() {
+                const nameInput = document.getElementById("namapelanggan").value.toLowerCase();
+                const modelInput = document.getElementById("filter-tahun").value;
+
+                const filtered = allData.filter(item =>
+                    (!nameInput || item.nama.toLowerCase().includes(nameInput)) &&
+                    (!modelInput || item.model === modelInput)
+                );
+
+                populateTable(filtered);
+                document.getElementById("btnBatal").style.display = "inline-block";
+            }
+
+            // Reset filter pencarian
+            document.getElementById("btnBatal").addEventListener("click", () => {
+                document.getElementById("namapelanggan").value = "";
+                document.getElementById("filter-tahun").value = "";
+                populateTable(allData);
+                document.getElementById("btnBatal");
+            });
+
+
+
+            async function loadPelangganMobilFromKlaim() {
+                const token = sessionStorage.getItem("authToken");
+
+                try {
+                    const res = await fetch("http://localhost:8080/csgaransi", {
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await res.json();
+                    if (result.status) {
+                        pelangganMobilData = result.data;
+
+                        const pelangganSelect = document.getElementById("selectNama");
+                        const modelSelect = document.getElementById("selectModel");
+
+                        // Reset isi dropdown
+                        pelangganSelect.innerHTML = `<option value="">Pilih Pelanggan</option>`;
+                        modelSelect.innerHTML = `<option value="">Pilih Model</option>`;
+
+                        const uniquePelanggan = new Map();
+                        const uniqueMobil = new Map();
+
+                        result.data.forEach(item => {
+                            if (!uniquePelanggan.has(item.pelanggan_id)) {
+                                uniquePelanggan.set(item.pelanggan_id, item.nama);
+                                const opt = document.createElement("option");
+                                opt.value = item.pelanggan_id;
+                                opt.textContent = item.nama;
+                                pelangganSelect.appendChild(opt);
+                            }
+
+                            if (!uniqueMobil.has(item.mobil_id)) {
+                                uniqueMobil.set(item.mobil_id, item.model);
+                                const opt = document.createElement("option");
+                                opt.value = item.mobil_id;
+                                opt.textContent = item.model;
+                                modelSelect.appendChild(opt);
+                            }
+                        });
+                    } else {
+                        console.warn("Gagal ambil data:", result.message);
+                    }
+                } catch (err) {
+                    console.error("Error:", err);
+                }
+            }
+
+
+            function updateGaransiId() {
+                const pelangganId = document.getElementById("selectNama").value;
+                const mobilId = document.getElementById("selectModel").value;
+
+                if (!pelangganId || !mobilId) {
+                    document.getElementById("garansiId").value = "";
+                    console.warn("⚠️ Pelanggan atau mobil belum dipilih.");
+                    return;
+                }
+
+                const selectedGaransi = pelangganMobilData.find(item =>
+                    String(item.pelanggan_id) === pelangganId &&
+                    String(item.mobil_id) === mobilId
+                );
+
+                if (selectedGaransi) {
+                    document.getElementById("garansiId").value = selectedGaransi.idg;
+                    console.log("✅ garansi_id ditemukan:", selectedGaransi.idg);
+                } else {
+                    document.getElementById("garansiId").value = "";
+                    console.warn("❌ Tidak ditemukan garansi_id untuk kombinasi ini.");
+
+                    // Opsional: beri tahu user
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Garansi Tidak Ditemukan',
+                        text: 'Tidak ada data garansi untuk kombinasi pelanggan dan mobil ini.',
+                        confirmButtonColor: '#f6c23e'
+                    });
+                }
+            }
+
+
+
+
+            document.getElementById("selectNama").addEventListener("change", updateGaransiId);
+            document.getElementById("selectModel").addEventListener("change", updateGaransiId);
+
+
+
+
+
+
+
+
+
+            // Tampilkan modal form
+            document.getElementById("klaimForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+                const token = sessionStorage.getItem("authToken");
+
+                const data = {
+                    pelanggan_id: document.getElementById("selectNama").value,
+                    mobil_id: document.getElementById("selectModel").value,
+                    garansi_id: document.getElementById("garansiId").value,
+                    klaim_deskripsi: document.getElementById("deskripsi").value,
+                    klaim_tanggal: document.getElementById("tanggalKlaim").value,
+                    klaim_status: 'Pending',
+                };
+
+                try {
+                    const res = await fetch("http://localhost:8080/csklaimgaransi/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await res.json();
+                    if (result.status) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: 'Klaim berhasil diajukan!',
+                            confirmButtonColor: '#3085d6'
+                        });
+
+                        fetchData(); // refresh tabel
+                        bootstrap.Modal.getInstance(document.getElementById("klaimModal")).hide();
+                        document.getElementById("klaimForm").reset();
+                        document.getElementById("selectModel").innerHTML = '<option value="">Pilih Model</option>';
+                    } else {
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: result.message || 'Gagal mengajukan klaim.',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                } catch (err) {
+                    console.error("Gagal kirim klaim:", err);
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi Kesalahan',
+                        text: 'Klaim tidak dapat dikirim. Silakan coba lagi.',
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            });
+
+
+
+
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="../asset/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+        <script src="../asset/Js/data.js"></script>
+        <script src="js/cs.js" defer></script>
+        <!-- <script src="../asset/js/data.js" defer></script> -->
+</body>
+
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Layanan</title>
+    <link rel="stylesheet" href="css/cs.css" />
+    <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css" />
+</head>
+
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+        <div class="container-fluid">
+            <div class="header" id="header"></div>
+
+            <div class="filter-box">
+                <div class="filter-group">
+                    <label for="filter-nama">Nama Pelanggan</label>
+                    <select id="filter-nama">
+                        <option value="">Pilih Pelanggan</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-model">Model Mobil</label>
+                    <select id="filter-model">
+                        <option value="">Pilih Model</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-primary rounded" style="width: 150px;"
+                        onclick="applyFilter()">Filter</button>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-danger rounded" type="button" id="btnBatal"
+                        style="width: 150px;">Batal</button>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <button id="btnTambahData" class="btn btn-primary mt-3">Buat Layanan</button>
+            </div>
+
+            <div class="my-3 p-3 bg-body rounded">
+                <div class="d-flex justify-content-between align-items-center py-2 mb-3 border-bottom">
+                    <h3>Data Layanan</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center align-middle text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tanggal</th>
+                                <th>Nama</th>
+                                <th>Model Mobil</th>
+                                <th>Deskripsi Layanan</th>
+                                <th>Biaya</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal Tambah -->
+            <div class="modal fade" id="modalTambahLayanan" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <form id="formTambahLayanan">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Tambah Layanan</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <!-- Kolom kiri -->
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="tambahPelanggan" class="form-label">Pelanggan</label>
+                                            <select id="tambahPelanggan" class="form-control" required>
+                                                <option value="">-- Pilih Pelanggan --</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="tambahModel" class="form-label">Mobil</label>
+                                            <select id="tambahModel" class="form-control" required>
+                                                <option value="">-- Pilih Mobil --</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="tambahTanggal" class="form-label">Tanggal</label>
+                                            <input type="date" id="tambahTanggal" class="form-control" required />
+                                        </div>
+                                    </div>
+
+                                    <!-- Kolom kanan -->
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="tambahDeskripsi" class="form-label">Deskripsi</label>
+                                            <textarea id="tambahDeskripsi" class="form-control" rows="5"
+                                                placeholder="Deskripsi"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="tambahBiaya" class="form-label">Biaya</label>
+                                            <input type="number" id="tambahBiaya" class="form-control"
+                                                placeholder="Biaya" required />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+            <!-- Modal Edit -->
+            <div class="modal fade" id="modalEditLayanan" tabindex="-1">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <form id="formEditLayanan">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Layanan</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="editId" />
+                                <input type="hidden" id="editMobilId" />
+                                <div class="row">
+                                    <!-- Kolom kiri -->
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editPelanggan" class="form-label">Pelanggan</label>
+                                            <select id="editPelanggan" class="form-control" required></select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editModel" class="form-label">Model Mobil</label>
+                                            <input type="text" id="editModel" class="form-control"
+                                                placeholder="Model Mobil" disabled />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editTanggal" class="form-label">Tanggal</label>
+                                            <input type="date" id="editTanggal" class="form-control" required />
+                                        </div>
+                                    </div>
+
+                                    <!-- Kolom kanan -->
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="editDeskripsi" class="form-label">Deskripsi</label>
+                                            <textarea id="editDeskripsi" class="form-control" rows="5"
+                                                placeholder="Deskripsi"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editBiaya" class="form-label">Biaya</label>
+                                            <input type="number" id="editBiaya" class="form-control" placeholder="Biaya"
+                                                required />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Perbarui</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = sessionStorage.getItem('authToken');
+            const endpoint = 'http://localhost:8080/cslayanan';
+            const tableBody = document.querySelector('tbody');
+            const pelangganDropdown = document.getElementById('filter-nama');
+            const modelDropdown = document.getElementById('filter-model');
+            const modalTambah = new bootstrap.Modal(document.getElementById('modalTambahLayanan'));
+            const modalEdit = new bootstrap.Modal(document.getElementById('modalEditLayanan'));
+            let allData = [];
+
+            fetch(endpoint, { headers: { 'Authorization': `Bearer ${token}` } })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.status && result.data.length > 0) {
+                        allData = result.data;
+                        renderTable(allData);
+                        populatePelangganDropdown(allData);
+                        populateModelDropdown(allData);
+                    } else {
+                        tableBody.innerHTML = '<tr><td colspan="7">Tidak ada data ditemukan.</td></tr>';
+                    }
+                });
+
+            function renderTable(data) {
+                tableBody.innerHTML = '';
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.tanggal_layanan}</td>
+            <td>${item.nama}</td>
+            <td>${item.model}</td>
+            <td>${item.deskripsi}</td>
+            <td>Rp ${Number(item.biaya).toLocaleString('id-ID')}</td>
+            <td>
+                <button class="btn btn-sm btn-warning btn-edit" data-id="${item.id}">Edit</button>
+                <button class="btn btn-sm btn-danger btn-hapus" data-id="${item.id}">Hapus</button>
+            </td>`;
+                    tableBody.appendChild(row);
+                });
+
+                document.querySelectorAll('.btn-edit').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const item = allData.find(d => d.id == button.dataset.id);
+                        if (!item) return;
+                        document.getElementById('editId').value = item.id;
+                        document.getElementById('editMobilId').value = item.mobil_id;
+                        document.getElementById('editPelanggan').value = item.pelanggan_id;
+                        document.getElementById('editModel').value = item.model;
+                        document.getElementById('editTanggal').value = item.tanggal_layanan;
+                        document.getElementById('editDeskripsi').value = item.deskripsi;
+                        document.getElementById('editBiaya').value = item.biaya;
+                        modalEdit.show();
+                    });
+                });
+
+                document.querySelectorAll('.btn-hapus').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const id = button.dataset.id;
+                        Swal.fire({
+                            title: 'Yakin ingin menghapus?',
+                            text: "Data tidak bisa dikembalikan!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, hapus!',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                fetch(`${endpoint}/delete/${id}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                })
+                                    .then(() => {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Dihapus!',
+                                            text: 'Data berhasil dihapus.'
+                                        }).then(() => location.reload());
+                                    })
+                                    .catch(() => {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Gagal',
+                                            text: 'Terjadi kesalahan saat menghapus data.'
+                                        });
+                                    });
+                            }
+                        });
+                    });
+                });
+            }
+
+            function populatePelangganDropdown() {
+                const selectTambah = document.getElementById('tambahPelanggan');
+                const selectEdit = document.getElementById('editPelanggan'); // tambahkan ini
+                const filterPelanggan = document.getElementById('filter-nama');
+
+                [selectTambah, selectEdit, filterPelanggan].forEach(select => {
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                });
+
+                const token = sessionStorage.getItem('authToken');
+
+                fetch('http://localhost:8080/cslayanan/datapelanggan', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.status && result.data) {
+                            result.data.forEach(pelanggan => {
+                                const opt1 = document.createElement('option');
+                                opt1.value = pelanggan.nama;
+                                opt1.textContent = pelanggan.nama;
+                                filterPelanggan.appendChild(opt1);
+
+                                const opt2 = document.createElement('option');
+                                opt2.value = pelanggan.id;
+                                opt2.textContent = pelanggan.nama;
+                                selectTambah.appendChild(opt2);
+
+                                const opt3 = document.createElement('option');
+                                opt3.value = pelanggan.id;
+                                opt3.textContent = pelanggan.nama;
+                                selectEdit.appendChild(opt3); // tambahkan untuk edit form
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Gagal fetch pelanggan:", err);
+                    });
+            }
+
+
+
+
+
+
+            function populateModelDropdown() {
+                const selectModel = document.getElementById('tambahModel');
+                const filterModel = document.getElementById('filter-model'); // ID baru
+
+                [selectModel, filterModel].forEach(select => {
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                });
+
+                const token = sessionStorage.getItem('authToken');
+
+                fetch('http://localhost:8080/cslayanan/datamobil', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.status && result.data) {
+                            const modelSet = new Set();
+
+                            result.data.forEach(mobil => {
+                                const opt = document.createElement('option');
+                                opt.value = mobil.id;
+                                opt.textContent = `${mobil.model} (ID: ${mobil.id})`;
+                                selectModel.appendChild(opt);
+
+                                modelSet.add(mobil.model);
+                            });
+
+                            modelSet.forEach(model => {
+                                const opt = document.createElement('option');
+                                opt.value = model;
+                                opt.textContent = model;
+                                filterModel.appendChild(opt);
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Gagal fetch mobil:", err);
+                    });
+            }
+
+
+
+
+            window.applyFilter = () => {
+                const nama = pelangganDropdown.value;
+                const model = modelDropdown.value;
+
+                const filtered = allData.filter(d =>
+                    (nama === '' || d.nama === nama) &&
+                    (model === '' || d.model === model)
+                );
+
+                renderTable(filtered);
+                document.getElementById('btnBatal').style.display = (nama || model) ? 'inline-block' : 'none';
+            };
+
+
+            document.getElementById('btnBatal').addEventListener('click', () => {
+                pelangganDropdown.value = '';
+                modelDropdown.value = '';
+                renderTable(allData);
+                document.getElementById('btnBatal');
+            });
+
+
+
+
+            document.getElementById('btnTambahData').addEventListener('click', () => {
+                document.getElementById('formTambahLayanan').reset();
+                modalTambah.show();
+            });
+
+
+
+
+
+            document.getElementById('formTambahLayanan').addEventListener('submit', e => {
+                e.preventDefault();
+                const payload = {
+                    pelanggan_id: document.getElementById('tambahPelanggan').value,
+                    mobil_id: document.getElementById('tambahModel').value,
+                    tanggal_layanan: document.getElementById('tambahTanggal').value,
+                    deskripsi: document.getElementById('tambahDeskripsi').value,
+                    biaya: document.getElementById('tambahBiaya').value
+                };
+
+                fetch(`${endpoint}/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.status) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Data layanan berhasil ditambahkan.'
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: result.message || 'Data gagal ditambahkan.'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan saat menambahkan data.'
+                        });
+                    });
+
+                modalTambah.hide();
+            });
+
+
+
+
+
+
+            document.getElementById('formEditLayanan').addEventListener('submit', e => {
+                e.preventDefault();
+                const id = document.getElementById('editId').value;
+                const payload = {
+                    pelanggan_id: document.getElementById('editPelanggan').value,
+                    mobil_id: document.getElementById('editMobilId').value,
+                    tanggal_layanan: document.getElementById('editTanggal').value,
+                    deskripsi: document.getElementById('editDeskripsi').value,
+                    biaya: document.getElementById('editBiaya').value
+                };
+
+                fetch(`${endpoint}/update/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                    .then(async response => {
+                        if (!response.ok) {
+                            const text = await response.text();
+                            throw new Error(`Gagal update: ${response.status} - ${text}`);
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Data layanan berhasil diperbarui.'
+                        }).then(() => location.reload());
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Update',
+                            text: error.message
+                        });
+                    });
+                modalEdit.hide();
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../asset/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+    <script src="js/cs.js" defer></script>
+    <script src="../asset/Js/data.js" defer></script>
+</body>
+
+</html>
