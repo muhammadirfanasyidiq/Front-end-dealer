@@ -1,0 +1,30 @@
+<!-- sidebar.html -->
+<h1>MobilBagus</h1>
+<div class="menu">
+  <div class="menu-item">
+    <a href="csdashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+  </div>
+
+  <div class="menu-item">
+    <a href="layanan.html" class="menu-link"><span class="icon">🚗</span> Layanan </a>
+  </div>
+
+  <div class="menu-item">
+    <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+      <span class="menu-link"><span class="icon">📈</span> Garansi</span>
+      <span class="arrow" id="arrow-penjualan">▼</span>
+    </div>
+    <div class="submenu" id="submenu-penjualan">
+      <a href="data-garansi.html">Data Garansi</a>
+      <a href="klaimgaransi.html">Klaim Garansi</a>
+    </div>
+  </div>
+
+  <div class="menu-item">
+    <a href="cspengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+  </div>
+
+  <div class="menu-item">
+    <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+  </div>
+</div>
