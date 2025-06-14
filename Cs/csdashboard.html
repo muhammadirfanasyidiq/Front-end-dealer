@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Customer Service</title>
+  <link rel="stylesheet" href="css/cs.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <style>
+    /* Tambahan styling agar grafik fleksibel penuh */
+    #serviceChart {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .card-custom {
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: relative;
+      padding: 20px;
+      /* width: 500px; */
+    }
+
+    .card-custom h6 {
+      font-weight: 600;
+      color: #888;
+    }
+
+    .card-custom h4 {
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    .card-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      opacity: 0.5;
+    }
+
+    .stat-trend {
+      font-size: 14px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body {
+      background-color: #f9eaea;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="header" id="header"></div>
+
+    <div class="container-fluid mt-4 ">
+      <div class="row mb-4">
+        <!-- Servis Rutin -->
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 p-3 bg-light text-center">
+            <!-- Ikon di tengah atas -->
+            <div class="text-center">
+              <div class="fs-1">🛠️</div>
+            </div>
+            <h6 class="mt-2">Servis Rutin</h6>
+            <p class="text-muted small">Pemeliharaan berkala untuk menjaga performa optimal kendaraan Anda.</p>
+          </div>
+        </div>
+
+        <!-- Perbaikan -->
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 p-3 bg-light text-center">
+            <div class="text-center">
+              <div class="fs-1">🔧</div>
+            </div>
+            <h6 class="mt-2">Perbaikan</h6>
+            <p class="text-muted small">Layanan perbaikan untuk mengatasi kerusakan atau masalah pada kendaraan.</p>
+          </div>
+        </div>
+
+        <!-- Klaim Garansi -->
+        <div class="col-md-4 mb-3">
+          <div class="card h-100 p-3 bg-light text-center">
+            <div class="text-center">
+              <div class="fs-1">🛡️</div>
+            </div>
+            <h6 class="mt-2">Klaim Garansi</h6>
+            <p class="text-muted small">Layanan klaim garansi untuk komponen yang masih dalam masa garansi.</p>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Statistik -->
+      <div class="row mb-4" id="statistikCards">
+        <!-- Card 1 -->
+        <div class="col-md-6 mb-3">
+          <div class="card-custom text-center">
+            <div class="card-icon">👤</div>
+            <h6>Total Layanan</h6>
+            <h4 id="totalLayanan">40</h4>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="col-md-6 mb-3">
+          <div class="card-custom text-center">
+            <div class="card-icon">🕒</div>
+            <h6>Layanan Pending</h6>
+            <h4 id="layananPending">10</h4>
+          </div>
+        </div>
+
+        <!-- Baris baru -->
+        <div class="w-100 d-none d-md-block"></div>
+
+        <!-- Card 3 -->
+        <div class="col-md-6 mb-3">
+          <div class="card-custom text-center">
+            <div class="card-icon">📋</div>
+            <h6>Layanan Selesai</h6>
+            <h4 id="layananSelesai">21</h4>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="col-md-6 mb-3">
+          <div class="card-custom text-center">
+            <div class="card-icon">💰</div>
+            <h6>Pemasukan</h6>
+            <h4 id="pemasukan">Rp. 125.000.000</h4>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Grafik -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card p-4" style="width: 100%; max-width: 90%;">
+            <h6 class="mb-3 text-center">Grafik Layanan Customer Service</h6>
+            <div style="height: 400px;">
+              <canvas id="serviceChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Script Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../asset/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+  <script src="../asset/Js/data.js"></script>
+  <script src="js/cs.js" defer></script>
+
+  <!-- Chart Init -->
+  <script>
+    let chartInstance = null;
+
+    async function loadStatistikDashboard() {
+      const token = sessionStorage.getItem('authToken');
+      try {
+        const response = await fetch('http://localhost:8080/dashboard', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        console.log(data);
+        document.getElementById('totalLayanan').textContent = data.totalLayanan;
+        document.getElementById('layananPending').textContent = data.layananPending;
+        document.getElementById('layananSelesai').textContent = data.layananSelesai;
+        document.getElementById('pemasukan').textContent = data.pemasukan;
+      } catch (error) {
+        console.error('Gagal memuat data statistik:', error);
+      }
+    }
+
+    async function loadChartData() {
+      try {
+        const token = sessionStorage.getItem('authToken');
+        const response = await fetch('http://localhost:8080/dashboard/chart', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        const ctx = document.getElementById('serviceChart').getContext('2d');
+
+        // Hancurkan chart sebelumnya jika ada
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+
+        chartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: 'Tahun Ini',
+                data: data.tahun_ini,
+                fill: true,
+                backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                borderColor: 'rgba(139, 92, 246, 1)',
+                tension: 0.3
+              },
+              {
+                label: 'Tahun Lalu',
+                data: data.tahun_lalu,
+                fill: true,
+                backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                borderColor: 'rgba(99, 102, 241, 1)',
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top'
+              }
+            }
+          }
+        });
+
+      } catch (error) {
+        console.error('Gagal memuat data grafik:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStatistikDashboard();
+      loadChartData(); // hanya sekali, jangan dobel
+    });
+
+
+  </script>
+</body>
+
+</html>

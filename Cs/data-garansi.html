@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/cs.css">
+    <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+</head>
+
+<body>
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="main">
+        <div class="container-fluid">
+            <div class="header" id="header"></div>
+
+            <!-- Form & Tombol dalam satu baris -->
+            <div class="filter-box">
+                <div class="filter-group">
+                    <label for="namapelanggan">Nama Pelanggan</label>
+                    <input type="text" id="namapelanggan" name="namapelanggan" placeholder=" Masukkan Nama">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-tahun">Pilih Model Mobil</label>
+                    <select id="filter-tahun">
+                        <option value="">Pilih Model</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-primary rounded" style="width: 150px;"
+                        onclick="applyFilter()">Filter</button>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-danger rounded" type="button" id="btnBatal"
+                        style="width: 150px;">Batal</button>
+                </div>
+            </div>
+
+
+            <div class="d-flex justify-content-end">
+                <!-- Tombol untuk membuka modal -->
+                <button id="btnTambahData" class="btn btn-primary mt-3" data-bs-toggle="modal"
+                    data-bs-target="#modalTambah">Tambah Data</button>
+            </div>
+
+            <div class="my-3 p-3 bg-body rounded">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-2 mb-3 border-bottom">
+                    <h3>Data Garansi</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center align-middle text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Mobil</th>
+                                <th>Tanggal Mulai</th>
+                                <th>Tanggal Akhir</th>
+                                <th>Detail Garansi</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="modalTambah" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <form id="formTambahGaransi">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Tambah Data Garansi</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <!-- Kolom Kiri -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="tambahPelanggan" class="form-label">Nama Pelanggan:</label>
+                                        <select id="tambahPelanggan" required class="form-control"></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="tambahModel" class="form-label">Mobil:</label>
+                                        <select id="tambahModel" required class="form-control"></select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="tanggalMulai" class="form-label">Tanggal Mulai:</label>
+                                        <input type="date" id="tanggalMulai" class="form-control" required>
+                                    </div>
+                                </div>
+
+                                <!-- Kolom Kanan -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="tanggalAkhir" class="form-label">Tanggal Akhir:</label>
+                                        <input type="date" id="tanggalAkhir" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="detailGaransi" class="form-label">Detail Garansi:</label>
+                                        <textarea id="detailGaransi" class="form-control" rows="5" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+    </div>
+    <script>
+        const apiUrl = "http://localhost:8080/csgaransi";
+        const token = sessionStorage.getItem("authToken"); // Ganti dengan token sesungguhnya
+
+        let originalData = []; // Menyimpan data awal untuk keperluan filter
+
+        // Ambil data dari API
+        async function fetchData() {
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                const result = await response.json();
+
+                if (result.status && result.data.length > 0) {
+                    originalData = result.data;
+                    populateTable(originalData);
+                    populateModelOptions(originalData);
+                } else {
+                    alert("Data tidak ditemukan.");
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                alert("Gagal mengambil data dari server.");
+            }
+        }
+
+        // Tampilkan data ke tabel
+        function populateTable(data) {
+            const tbody = document.querySelector("tbody");
+            tbody.innerHTML = "";
+
+            data.forEach(item => {
+                const row = `
+            <tr>
+                <td>${item.idg}</td>
+                <td>${item.nama}</td>
+                <td>${item.model}</td>
+                <td>${item.tanggal_mulai}</td>
+                <td>${item.tanggal_berakhir}</td>
+                <td>${item.detail_garansi}</td>
+                <td>${item.klaim_status}</td>
+            </tr>
+        `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Isi dropdown model mobil secara dinamis
+        function populateModelOptions(data) {
+            const select = document.getElementById("filter-tahun");
+            const uniqueModels = [...new Set(data.map(item => item.model))];
+
+            select.innerHTML = `<option value="">Pilih Model</option>`;
+            uniqueModels.forEach(model => {
+                const option = document.createElement("option");
+                option.value = model;
+                option.textContent = model;
+                select.appendChild(option);
+            });
+        }
+
+        // Fungsi filter
+        function applyFilter() {
+            const namaInput = document.getElementById("namapelanggan").value.toLowerCase();
+            const modelInput = document.getElementById("filter-tahun").value;
+
+            const filtered = originalData.filter(item => {
+                const matchNama = item.nama.toLowerCase().includes(namaInput);
+                const matchModel = modelInput === "" || item.model === modelInput;
+                return matchNama && matchModel;
+            });
+
+            populateTable(filtered);
+            document.getElementById("btnBatal").style.display = "inline-block";
+        }
+
+        // Tombol batal filter
+        document.getElementById("btnBatal").addEventListener("click", () => {
+            document.getElementById("namapelanggan").value = "";
+            document.getElementById("filter-tahun").value = "";
+            populateTable(originalData);
+            document.getElementById("btnBatal");
+        });
+
+
+        function populatePelangganDropdown() {
+            const selectTambah = document.getElementById('tambahPelanggan');
+            const filterPelanggan = document.getElementById('filter-nama');
+
+            [selectTambah, filterPelanggan].forEach(select => {
+                if (!select) return;
+                // Hapus semua kecuali pertama
+                while (select.options.length > 0) {
+                    select.remove(0);
+                }
+            });
+
+            // Tambahkan opsi default
+            if (selectTambah) {
+                selectTambah.appendChild(new Option("Pilih Pelanggan", ""));
+            }
+            if (filterPelanggan) {
+                filterPelanggan.appendChild(new Option("Semua Pelanggan", ""));
+            }
+
+            const token = sessionStorage.getItem('authToken');
+
+            fetch('http://localhost:8080/cslayanan/datapelanggan', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.status && result.data) {
+                        result.data.forEach(pelanggan => {
+                            const optFilter = new Option(pelanggan.nama, pelanggan.nama);
+                            filterPelanggan?.appendChild(optFilter);
+
+                            const optTambah = new Option(pelanggan.nama, pelanggan.id);
+                            selectTambah?.appendChild(optTambah);
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error("Gagal fetch pelanggan:", err);
+                });
+        }
+
+        function populateModelDropdown() {
+            const selectModel = document.getElementById('tambahModel');
+            const filterModel = document.getElementById('filter-model');
+
+            [selectModel, filterModel].forEach(select => {
+                if (!select) return;
+                while (select.options.length > 0) {
+                    select.remove(0);
+                }
+            });
+
+            // Tambahkan opsi default
+            if (selectModel) {
+                selectModel.appendChild(new Option("Pilih Mobil", ""));
+            }
+            if (filterModel) {
+                filterModel.appendChild(new Option("Semua Model", ""));
+            }
+
+            const token = sessionStorage.getItem('authToken');
+
+            fetch('http://localhost:8080/cslayanan/datamobil', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(res => res.json())
+                .then(result => {
+                    if (result.status && result.data) {
+                        const modelSet = new Set();
+
+                        result.data.forEach(mobil => {
+                            const optMobil = new Option(`${mobil.model} (ID: ${mobil.id})`, mobil.id);
+                            selectModel?.appendChild(optMobil);
+                            modelSet.add(mobil.model);
+                        });
+
+                        modelSet.forEach(model => {
+                            const optFilter = new Option(model, model);
+                            filterModel?.appendChild(optFilter);
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error("Gagal fetch mobil:", err);
+                });
+        }
+
+
+
+        document.getElementById("formTambahGaransi").addEventListener("submit", async function (e) {
+            e.preventDefault(); // Cegah reload
+
+            const pelangganId = document.getElementById("tambahPelanggan").value;
+            const mobilId = document.getElementById("tambahModel").value;
+            const tanggalMulai = document.getElementById("tanggalMulai").value;
+            const tanggalAkhir = document.getElementById("tanggalAkhir").value;
+            const detailGaransi = document.getElementById("detailGaransi").value;
+
+            // Validasi sederhana
+            if (!pelangganId || !mobilId || !tanggalMulai || !detailGaransi) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Form tidak lengkap',
+                    text: 'Harap isi semua field yang wajib.'
+                });
+                return;
+            }
+
+            const data = {
+                pelanggan_id: pelangganId,
+                mobil_id: mobilId,
+                tanggal_mulai: tanggalMulai,
+                tanggal_berakhir: tanggalAkhir,
+                detail_garansi: detailGaransi
+            };
+
+            try {
+                const token = sessionStorage.getItem("authToken");
+
+                const response = await fetch("http://localhost:8080/csgaransi/create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.status) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Data berhasil disimpan.'
+                    }).then(() => {
+                        document.getElementById("formTambahGaransi").reset();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById("modalTambah"));
+                        modal.hide();
+                        fetchData(); // refresh data
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menyimpan',
+                        text: result.message || 'Terjadi kesalahan saat menyimpan data.'
+                    });
+                }
+
+            } catch (error) {
+                console.error("Error saat menyimpan data:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Server Error',
+                    text: 'Terjadi kesalahan saat menyimpan data.'
+                });
+            }
+        });
+
+
+
+        // Panggil fetch saat halaman load
+        window.addEventListener("DOMContentLoaded", () => {
+            fetchData(); // sudah ada
+            populatePelangganDropdown();
+            populateModelDropdown();
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="../asset/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+    <script src="../asset/Js/data.js"></script>
+    <script src="js/cs.js" defer></script>
+    <!-- <script src="../asset/js/data.js" defer></script> -->
+</body>
+
+</html>
