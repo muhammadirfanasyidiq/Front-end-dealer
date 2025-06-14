@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Daftar Pembayaran | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-pembayaran.html">Daftar Pembayaran</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+          <a href="data-garansi.html">Data Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header">
+      <div>☰</div>
+      <div class="admin-btn">👤 Admin ▾</div>
+    </div>
+
+    <div class="filter-box">
+      <div class="input-container" style="width: 300px;">
+        <label class="form-label ms-3" for="id-pembayaran">ID pembayaran : </label>
+        <input type="text" id="id-pembayaran" class="form-control" placeholder="Masukkan ID pembayaran ">
+      </div>
+      <button class="cancel-button" id="btnReset" onclick="alert('Reset filter')">Batal</button>
+      <button class="filter-button" id="btnFilter" onclick="alert('Terapkan filter')">Filter</button>
+    </div>
+
+    <h1>Data Penjualan Mobil</h1>
+    <table id="penjualanTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Pelanggan</th>
+          <th>Mobil</th>
+          <th>Tanggal</th>
+          <th>jumlah bayar</th>
+          <th>Metode Pembayaran</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <button disabled>Previous</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>Next</button>
+    </div>
+  </div>
+  </div>
+  <!-- Potongan kode sebelum bagian script tidak berubah -->
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchPembayaran();
+
+      document.getElementById("btnFilter").addEventListener("click", async () => {
+        const penjualan_id = document.getElementById("id-pembayaran").value.trim();
+        const token = sessionStorage.getItem("authToken");
+
+        if (!penjualan_id) {
+          alert("Masukkan ID pembayaran terlebih dahulu.");
+          return;
+        }
+
+        try {
+          const response = await fetch(`http://localhost:8080/pembayaran/filter/${penjualan_id}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error("Gagal mengambil data filter.");
+          }
+
+          const responseData = await response.json();
+
+          // Handle the nested array structure from filter response
+          const dataToDisplay = responseData.data && responseData.data.length > 0 ?
+            responseData.data[0] : // Take the first array if exists
+            [];
+          tampilkanData(dataToDisplay);
+
+        } catch (err) {
+          console.error(err);
+          alert("Terjadi kesalahan saat memfilter data.");
+        }
+      });
+
+      document.getElementById("btnReset").addEventListener("click", () => {
+        document.getElementById("id-pembayaran").value = "";
+        fetchPembayaran();
+      });
+    });
+
+    async function fetchPembayaran() {
+      const token = sessionStorage.getItem("authToken");
+      try {
+        const response = await fetch("http://localhost:8080/pembayaran", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data.");
+        }
+
+        const responseData = await response.json();
+
+        // Handle the direct array structure from all data response
+        const dataToDisplay = responseData.data || [];
+        tampilkanData(dataToDisplay);
+
+      } catch (err) {
+        console.error(err);
+        alert("Gagal memuat data pembayaran.");
+      }
+    }
+
+    function tampilkanData(dataArray) {
+      const tableBody = document.getElementById("tableBody");
+      tableBody.innerHTML = "";
+
+      if (!dataArray || dataArray.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="7" class="text-center">Data tidak ditemukan</td></tr>`;
+        return;
+      }
+
+      dataArray.forEach(item => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+        <td>${item.penjualan_id}</td>
+        <td>${item.nama_pelanggan || item.pelanggan_id || '-'}</td>
+        <td>${(item.merek && item.model_mobil) ? item.merek + ' ' + item.model_mobil : item.mobil_id || '-'}</td>
+        <td>${item.tanggal_transaksi || '-'}</td>
+        <td>${formatCurrency(item.jumlah_bayar) || '-'}</td>
+        <td>${item.metode_pembayaran || '-'}</td>
+      `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function formatCurrency(amount) {
+      if (!amount) return '-';
+      // Convert string to number and format as currency
+      const num = parseFloat(amount);
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      }).format(num);
+    }
+
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "../login.html";
+      });
+    }
+  </script>
+  <script src="js/admin.js"></script>
+  <script src="../asset/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>

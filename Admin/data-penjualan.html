@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Data Penjualan | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-pembayaran.html">Daftar Pembayaran</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+          <a href="data-garansi.html">Data Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header">
+      <div>☰</div>
+      <div class="admin-btn">👤 Admin ▾</div>
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-group">
+        <label for="filter-harga mb-3">Harga : </label>
+        <input type="date" class="form-control" placeholder="dd/mm/yy" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-merek">Merek : </label>
+        <select id="filter-merek">
+          <option class="form-control" value="">Semua Merek</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-tahun">Status Pembayaran :</label>
+        <select id="filter-tahun">
+          <option class="form-control" value="">Semua Status</option>
+        </select>
+      </div>
+      <!-- <div class="filter-box "> -->
+      <button class="cancel-button" onclick="resetFilter()">Batal</button>
+      <button class="filter-button" onclick="applyFilter()">Filter</button>
+      <!-- </div> -->
+    </div>
+
+
+    <h1>Data Penjualan Mobil</h1>
+    <table id="penjualanTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Pelanggan</th>
+          <th>Mobil</th>
+          <th>Nama Sales</th>
+          <th>Tanggal</th>
+          <th>Total Harga</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+
+      </tbody>
+    </table>
+
+
+
+    <!-- form edit penjualan -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="editForm" onsubmit="submitEdit(event)">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editModalLabel">Edit Penjualan</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="edit-id" name="id">
+              <div class="mb-3">
+                <label for="edit-nama" class="form-label">Nama Pelanggan</label>
+                <input type="text" class="form-control" id="edit-nama" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="edit-model" class="form-label">Model Mobil</label>
+                <input type="text" class="form-control" id="edit-model" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="edit-tanggaltransaksi" class="form-label">Tanggal Penjualan</label>
+                <input type="date" class="form-control" id="edit-tanggaltransaksi">
+              </div>
+              <div class="mb-3">
+                <label for="edit-sales" class="form-label">sales</label>
+                <input type="text" class="form-control" id="edit-sales" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="edit-totalharga" class="form-label">Total Harga</label>
+                <input type="text" class="form-control" id="edit-totalharga" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="edit-status" class="form-label">Status Pembayaran</label>
+                <select class="form-select" id="edit-status" required>
+                  <option value="selesai">Selesai</option>
+                  <option value="proses">Proses</option>
+                  <option value="batal">Batal</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="edit-jumlahbayar" class="form-label">Jumlah Bayar</label>
+                <input type="text" class="form-control" id="edit-jumlahbayar" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="edit-metodepembayaran" class="form-label">Metode Pembayaran</label>
+                <select class="form-select" id="edit-metodepembayaran" required>
+                  <option value="Cash">Cash</option>
+                  <option value="Transfer">Transfer</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <button disabled>Previous</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>Next</button>
+    </div>
+  </div>
+  </div>
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+      fetchPenjualanData();
+    });
+
+    const token = sessionStorage.getItem('authToken');
+
+    let allPenjualanData = [];
+    // Fetch data penjualan
+    async function fetchPenjualanData() {
+      try {
+        const response = await fetch('http://localhost:8080/penjualan', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status && data.data) {
+          allPenjualanData = data.data; // Simpan semua data
+          populateTable(data.data);
+          populateFilterOptions(data.data); // Populate filter options
+        } else {
+          throw new Error('Data tidak ditemukan atau format respons tidak valid');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Gagal memuat data penjualan: ' + error.message);
+      }
+    }
+
+
+
+
+
+
+
+    // Populate tabel dengan data
+    function populateTable(data) {
+      const tableBody = document.getElementById('tableBody');
+      tableBody.innerHTML = '';
+
+      data.forEach(item => {
+        const row = document.createElement('tr');
+
+        const formattedPrice = formatRupiah(item.total_harga);
+        const status = item.status_pembayaran ? item.status_pembayaran.toLowerCase() : 'batal';
+        let statusClass = 'batal';
+        let statusText = 'Batal';
+
+        if (status === 'selesai') {
+          statusClass = 'selesai';
+          statusText = 'Selesai';
+        } else if (status === 'proses') {
+          statusClass = 'proses';
+          statusText = 'Proses';
+        }
+
+        const transactionDate = new Date(item.tanggal_transaksi);
+        const formattedDate = `${transactionDate.getDate().toString().padStart(2, '0')}/${(transactionDate.getMonth() + 1).toString().padStart(2, '0')}/${transactionDate.getFullYear()}`;
+
+        row.innerHTML = `
+        <td>${item.id}</td>
+        <td>${item.nama}</td>
+        <td> ${item.merek} ${item.model}</td>
+        <td>${item.username}</td>
+        <td>${formattedDate}</td>
+        <td>Rp. ${formattedPrice}</td>
+        <td><span class="status ${statusClass}">${statusText}</span></td>
+        <td class="aksi-btn">
+          <button class="edit" onclick="editPenjualan('${item.id}')">✏️</button>
+          <button class="delete" onclick="deletePenjualan('${item.id}')">🗑️</button>
+        </td>
+      `;
+
+        tableBody.appendChild(row);
+      });
+    }
+
+
+    // Format rupiah
+    function formatRupiah(amount) {
+      const num = parseFloat(amount);
+      return num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    }
+
+
+
+
+
+    // Function untuk edit penjualan
+    async function editPenjualan(id) {
+      try {
+        // Fetch detail data penjualan berdasarkan ID
+        const response = await fetch(`http://localhost:8080/penjualan/${id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data.status && data.data && Array.isArray(data.data)) {
+            // Cari data penjualan yang cocok dengan ID
+            const penjualanData = data.data.find(p => p.id === id);
+
+            if (penjualanData) {
+              console.log(penjualanData);
+
+              // Populate form dengan data
+              document.getElementById('edit-id').value = penjualanData.id;
+              document.getElementById('edit-tanggaltransaksi').value = penjualanData.tanggal_transaksi;
+              document.getElementById('edit-totalharga').value = formatRupiahInput(penjualanData.total_harga);
+              document.getElementById('edit-status').value = penjualanData.status_pembayaran;
+              document.getElementById('edit-jumlahbayar').value = formatRupiahInput(penjualanData.jumlah_bayar || penjualanData.total_harga);
+              document.getElementById('edit-metodepembayaran').value = penjualanData.metode_pembayaran;
+
+              const pelangganElem = document.getElementById('edit-nama');
+              pelangganElem.value = `${penjualanData.nama}`;
+              pelangganElem.dataset.pelanganid = penjualanData.pelanggan_id;
+
+              const modelElem = document.getElementById('edit-model');
+              modelElem.value = `${penjualanData.model}`;
+              modelElem.dataset.id = penjualanData.mobil_id;
+
+              const salesElem = document.getElementById('edit-sales');
+              salesElem.value = `${penjualanData.username}`;
+              salesElem.dataset.userid = penjualanData.user_id;
+
+              // Buka modal
+              const modal = new bootstrap.Modal(document.getElementById('editModal'));
+              modal.show();
+            } else {
+              throw new Error('Data penjualan dengan ID tersebut tidak ditemukan');
+            }
+          } else {
+            throw new Error('Format data tidak valid');
+          }
+        } else {
+          throw new Error('Gagal mengambil data penjualan');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Gagal memuat data untuk edit: ' + error.message);
+      }
+    }
+
+
+
+
+
+
+    
+    // Function untuk submit edit
+    async function submitEdit(event) {
+      event.preventDefault();
+
+      const formData = {
+        pelanggan_id: document.getElementById('edit-nama').dataset.pelanganid,
+        mobil_id: document.getElementById('edit-model').dataset.id,
+        tanggal_transaksi: document.getElementById('edit-tanggaltransaksi').value,
+        user_id: document.getElementById('edit-sales').dataset.userid,
+        total_harga: parseFloat(document.getElementById('edit-totalharga').value.replace(/[^\d]/g, '')),
+        status_pembayaran: document.getElementById('edit-status').value,
+        jumlah_bayar: parseFloat(document.getElementById('edit-jumlahbayar').value.replace(/[^\d]/g, '')),
+        metode_pembayaran: document.getElementById('edit-metodepembayaran').value
+      };
+
+      const id = document.getElementById('edit-id').value;
+      const token = sessionStorage.getItem('authToken');
+
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+
+      try {
+        // Tampilkan loading
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Menyimpan...';
+
+        const response = await fetch(`http://localhost:8080/penjualan/update/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.status) {
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Data berhasil diupdate!',
+            confirmButtonColor: '#3085d6'
+          });
+
+          // Tutup modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+          modal.hide();
+
+          // Refresh data
+          fetchPenjualanData();
+        } else {
+          throw new Error(result.message || 'Gagal mengupdate data');
+        }
+
+      } catch (error) {
+        console.error('Error updating data:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Terjadi Kesalahan',
+          text: error.message || 'Gagal memperbarui data.',
+          confirmButtonColor: '#d33'
+        });
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Function untuk delete penjualan
+    async function deletePenjualan(id) {
+      const token = sessionStorage.getItem('authToken');
+
+      Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: `Penjualan dengan ID ${id} akan dihapus!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch("http://localhost:8080/penjualan/delete/" + id, {
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            }
+          })
+            .then(response => {
+              if (response.status === 404) {
+                return response.json().then(data => {
+                  throw new Error(data.message || 'Data tidak ditemukan');
+                });
+              }
+              if (response.status === 500) {
+                return response.json().then(data => {
+                  throw new Error(data.message || 'Gagal menghapus data');
+                });
+              }
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.status === true) {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Berhasil!',
+                  text: data.message || 'Data berhasil dihapus!',
+                  confirmButtonColor: '#3085d6'
+                });
+                fetchPenjualanData(); // Refresh data setelah sukses
+              } else {
+                throw new Error(data.message || "Gagal menghapus data");
+              }
+            })
+            .catch(error => {
+              console.error("Terjadi kesalahan:", error);
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: error.message || "Terjadi kesalahan saat menghapus data.",
+                confirmButtonColor: '#d33'
+              });
+            });
+        }
+      });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Helper function untuk format currency input
+    function formatRupiahInput(amount) {
+      if (!amount) return '';
+      const num = parseFloat(amount);
+      return new Intl.NumberFormat('id-ID', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(num);
+    }
+
+
+    function populateFilterOptions(data) {
+      // Populate filter merek
+      const merekSet = new Set();
+      const statusSet = new Set();
+
+      data.forEach(item => {
+        if (item.merek) {
+          merekSet.add(item.merek);
+        }
+        if (item.status_pembayaran) {
+          statusSet.add(item.status_pembayaran);
+        }
+      });
+
+      const merekSelect = document.getElementById('filter-merek');
+      merekSelect.innerHTML = '<option value="">Semua Merek</option>';
+      Array.from(merekSet).sort().forEach(merek => {
+        merekSelect.innerHTML += `<option value="${merek}">${merek}</option>`;
+      });
+
+      // Populate status dropdown
+      const statusSelect = document.getElementById('filter-tahun');
+      statusSelect.innerHTML = '<option value="">Semua Status</option>';
+      Array.from(statusSet).sort().forEach(status => {
+        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+        statusSelect.innerHTML += `<option value="${status}">${statusText}</option>`;
+      });
+    }
+
+
+
+    // Function untuk apply filter (implementasi dasar)
+
+    function applyFilter() {
+      const filterTanggal = document.querySelector('input[type="date"]').value;
+      const filterMerek = document.getElementById('filter-merek').value;
+      const filterStatus = document.getElementById('filter-tahun').value;
+
+      let filteredData = allPenjualanData;
+
+      // Filter berdasarkan tanggal
+      if (filterTanggal) {
+        filteredData = filteredData.filter(item => {
+          const itemDate = new Date(item.tanggal_transaksi).toISOString().split('T')[0];
+          return itemDate === filterTanggal;
+        });
+      }
+
+      // Filter berdasarkan merek
+      if (filterMerek) {
+        filteredData = filteredData.filter(item =>
+          item.merek && item.merek.toLowerCase().includes(filterMerek.toLowerCase())
+        );
+      }
+
+      // Filter berdasarkan status
+      if (filterStatus) {
+        filteredData = filteredData.filter(item =>
+          item.status_pembayaran && item.status_pembayaran.toLowerCase() === filterStatus.toLowerCase()
+        );
+      }
+
+      // Update tabel dengan data yang sudah difilter
+
+      populateTable(filteredData);
+
+    }
+
+    // Function untuk reset filter
+    function resetFilter() {
+      document.querySelector('input[type="date"]').value = '';
+      document.getElementById('filter-merek').value = '';
+      document.getElementById('filter-tahun').value = '';
+      populateTable(allPenjualanData);
+    }
+
+
+
+
+
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "../login.html";
+      });
+    }
+
+  
+  </script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="../asset/bootstrap/js/bootstrap.min.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+
+</html>

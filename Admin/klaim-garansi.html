@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Data Klaim Garansi | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidebarpel.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <style>
+    .filter-box {
+      display: flex;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      gap: 1rem;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-box input,
+    .filter-box select {
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      flex: 1;
+    }
+
+    .filter-box button {
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-reset {
+      background: #b91c1c;
+      color: white;
+    }
+
+    .btn-filter {
+      background: #4f46e5;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-pembayaran.html">Daftar Penjualan</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="data-garansi.html">Data Garansi</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header">
+      <div>☰</div>
+      <div class="admin">👤 Admin ▾</div>
+    </div>
+
+    <div class="filter-box">
+      <input type="text" placeholder="Semua Nama Pelanggan">
+      <select>
+        <option>Semua Status</option>
+        <option>Diterima</option>
+        <option>Diproses</option>
+        <option>Pending</option>
+      </select>
+      <button class="btn-reset" onclick="alert('Reset filter')">Batal</button>
+      <button class="btn-filter" onclick="alert('Filter digunakan')">Filter</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Pelanggan</th>
+          <th>Mobil</th>
+          <th>Tanggal Klaim</th>
+          <th>Deskripsi Klaim</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="klaimBody">
+
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <button class="disabled">Previous</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>Next</button>
+    </div>
+  </div>
+  </div>
+  <script>
+    const token = sessionStorage.getItem('authToken');
+    const tbody = document.getElementById("klaimBody");
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchKlaimGaransi();
+    });
+    async function fetchKlaimGaransi() {
+      try {
+        const response = await fetch("http://localhost:8080/klaimgaransi", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data klaim");
+        }
+
+        const result = await response.json();
+        const data = result.data; // Ambil array dari properti "data"
+        tbody.innerHTML = ""; // Kosongkan isi sebelumnya
+
+        data.forEach(item => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+        <td>${item.idklaim}</td>
+        <td>${item.nama}</td>
+        <td>${item.model}</td>
+        <td>${new Date(item.klaim_tanggal).toLocaleDateString("id-ID")}</td>
+        <td>${item.klaim_deskripsi}</td>
+        <td>
+          <select class="status-dropdown" onchange="ubahStatus('${item.idklaim}', this.value)">
+            <option ${item.klaim_status === "Selesai" ? "selected" : ""}>Selesai</option>
+            <option ${item.klaim_status === "Diproses" ? "selected" : ""}>Diproses</option>
+            <option ${item.klaim_status === "Diterima" ? "selected" : ""}>Diterima</option>
+            <option ${item.klaim_status === "Pending" ? "selected" : ""}>Pending</option>
+            <option ${item.klaim_status === "Belum Diklaim" ? "selected" : ""}>Belum Diklaim</option>
+          </select>
+        </td>
+      `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (error) {
+        console.error("Error:", error);
+        tbody.innerHTML = `<tr><td colspan="6">Gagal memuat data</td></tr>`;
+      }
+    }
+
+
+
+    async function ubahStatus(idklaim, statusBaru) {
+      const token = sessionStorage.getItem('authToken');
+
+      try {
+        const response = await fetch(`http://localhost:8080/klaimgaransi/update/${idklaim}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ klaim_status: statusBaru })
+        });
+
+        if (!response.ok) {
+          throw new Error("Gagal mengubah status klaim");
+        }
+
+        await Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: `Status klaim ${idklaim} berhasil diubah menjadi "${statusBaru}"`,
+          confirmButtonColor: '#3085d6'
+        });
+
+        // Refresh data jika perlu:
+        if (typeof loadKlaimData === 'function') {
+          loadKlaimData();
+        }
+
+      } catch (error) {
+        console.error("Error:", error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: 'Terjadi kesalahan saat mengubah status klaim. Silakan coba lagi.',
+          confirmButtonColor: '#d33'
+        });
+      }
+    }
+
+
+
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "../login.html";
+      });
+    }
+
+    // Panggil saat halaman dimuat
+    // window.onload = fetchKlaimGaransi;
+  </script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="../asset/bootstrap/js/bootstrap.min.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+
+</html>

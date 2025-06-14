@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Data Layanan | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidebarpel.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <style>
+    .filter-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-box input[type="date"],
+    .filter-box select {
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 200px;
+      height: 42px;
+      /* fix: samakan tinggi */
+      box-sizing: border-box;
+    }
+
+    .filter-box button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      height: 42px;
+      /* agar tombol sejajar juga */
+    }
+
+    .btn-reset {
+      background-color: #dc2626;
+      color: white;
+    }
+
+    .btn-filter {
+      background-color: #4f46e5;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-pembayaran.html">Daftar Penjualan</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="data-garansi.html">Data Garansi</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header" id="header">
+      <div>☰</div>
+      <div class="admin">👤 Admin ▾</div>
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-group">
+        <input type="date" id="filter-date" placeholder="yyyy-mm-dd" />
+      </div>
+      <div class="filter-group">
+        <select id="filter-pelanggan">
+          <option value="">Pilih pelanggan</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <select id="filter-mobil">
+          <option value="">Pilih mobil</option>
+        </select>
+      </div>
+      <button class="btn-reset" onclick="resetFilter()">Batal</button>
+      <button class="btn-filter" onclick="applyFilter()">Filter</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tanggal</th>
+          <th>Nama</th>
+          <th>Mobil</th>
+          <th>Deskripsi Layanan</th>
+          <th>Biaya</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+
+        </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+    <!-- Modal -->
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="layananModal" tabindex="-1" aria-labelledby="layananModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="layananModalLabel">Detail Layanan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="modal-id" class="form-label">ID</label>
+                <input type="text" class="form-control" id="modal-id" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="modal-tanggal" class="form-label">Tanggal</label>
+                <input type="text" class="form-control" id="modal-tanggal" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="modal-nama" class="form-label">Nama Pelanggan</label>
+                <input type="text" class="form-control" id="modal-nama" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="modal-model" class="form-label">Nama Mobil</label>
+                <input type="text" class="form-control" id="modal-model" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="modal-deskripsi" class="form-label">Deskripsi Layanan</label>
+                <input type="text" class="form-control" id="modal-deskripsi" readonly>
+              </div>
+              <div class="col-md-6">
+                <label for="modal-biaya" class="form-label">Biaya</label>
+                <input type="text" class="form-control" id="modal-biaya" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+    <div class="pagination">
+      <button class="disabled">Previous</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>Next</button>
+    </div>
+  </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', fetchLayananData);
+
+    async function fetchLayananData() {
+      try {
+        const token = sessionStorage.getItem('authToken');
+
+        if (!token) {
+          alert('Anda belum login atau sesi telah habis');
+          window.location.href = '../login.html';
+          return;
+        }
+
+        const response = await fetch('http://localhost:8080/layanan', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Data layanan:', data); // Untuk debugging
+        displayLayananData(data.data || data); // Sesuaikan jika datanya nested
+
+      } catch (error) {
+        console.error('Error fetching layanan:', error);
+        alert('Gagal mengambil data layanan: ' + error.message);
+      }
+    }
+
+    function displayLayananData(layananList) {
+      const tbody = document.querySelector('tbody');
+      tbody.innerHTML = ''; // Kosongkan isi tabel
+
+      if (!Array.isArray(layananList) || layananList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">Tidak ada data layanan</td></tr>';
+        return;
+      }
+
+      layananList.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+        <td>${item.id || ''}</td>
+        <td>${item.tanggal_layanan || ''}</td>
+        <td>${item.nama || ''}</td>
+        <td>${item.model || ''}</td>
+        <td>${item.deskripsi || ''}</td>
+        <td>${item.biaya ? 'Rp. ' + item.biaya.toLocaleString() : ''}</td>
+        <td class="aksi">
+          <button onclick='showDetail(${JSON.stringify(item).replace(/'/g, "\\'")})'>👁️</button>
+        </td>
+      `;
+        tbody.appendChild(row);
+      });
+    }
+
+
+
+
+
+
+    const API_PELANGGAN = 'http://localhost:8080/pelanggan';
+    const API_MOBIL = 'http://localhost:8080/mobil';
+    const token = sessionStorage.getItem('authToken');
+
+    // Populate dropdown pelanggan
+    fetch(API_PELANGGAN, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const list = Array.isArray(data) ? data : data.data; // ← ambil dari .data
+        const pelangganSelect = document.getElementById('filter-pelanggan');
+        list.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.nama; // pakai nama karena itu digunakan di URL filter
+          option.textContent = item.nama;
+          pelangganSelect.appendChild(option);
+        });
+      })
+      .catch(err => console.error('Gagal memuat pelanggan:', err));
+
+    // Populate dropdown mobil
+    fetch(API_MOBIL, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        const list = Array.isArray(data) ? data : data.data;
+        const mobilSelect = document.getElementById('filter-mobil');
+        list.forEach(item => {
+          const option = document.createElement('option');
+          const namaMobil = `${item.model}`; // Gabung merek + model
+          option.value = namaMobil;
+          option.textContent = namaMobil;
+          mobilSelect.appendChild(option);
+        });
+      });
+
+
+    // Reset filter
+    function resetFilter() {
+      document.getElementById('filter-date').value = '';
+      document.getElementById('filter-pelanggan').value = '';
+      document.getElementById('filter-mobil').value = '';
+
+      fetchLayananData(); // Ambil semua data tanpa filter
+    }
+
+
+    // Apply filter
+    function applyFilter() {
+      const date = document.getElementById('filter-date').value;
+      const pelanggan = document.getElementById('filter-pelanggan').value;
+      const mobil = document.getElementById('filter-mobil').value;
+
+      if (!date || !pelanggan || !mobil) {
+        alert('Semua filter harus diisi!');
+        return;
+      }
+
+      const url = `http://localhost:8080/layanan/filter/${date}/${(pelanggan)}/${(mobil)}`;
+
+      fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          console.log('Data filter:', data);
+          if (data && data.status && Array.isArray(data.data)) {
+            displayLayananData(data.data);
+          } else {
+            displayLayananData([]); // tampilkan kosong jika tidak valid
+            alert('Data filter tidak ditemukan atau format salah.');
+          }
+        })
+    }
+
+
+
+
+    function showDetail(item) {
+      document.getElementById('modal-id').value = item.id || '-';
+      document.getElementById('modal-tanggal').value = item.tanggal_layanan || '-';
+      document.getElementById('modal-nama').value = item.nama || '-';
+      document.getElementById('modal-model').value = item.model || '-';
+      document.getElementById('modal-deskripsi').value = item.deskripsi || '-';
+      document.getElementById('modal-biaya').value = item.biaya ? 'Rp. ' + item.biaya.toLocaleString() : '-';
+
+      const modal = new bootstrap.Modal(document.getElementById('layananModal'));
+      modal.show();
+    }
+
+
+    function closeModal() {
+      document.getElementById('layananModal').style.display = 'none';
+    }
+
+    // Optional: Tutup modal jika user klik di luar kontennya
+    window.onclick = function (event) {
+      const modal = document.getElementById('layananModal');
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+
+
+
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "../login.html";
+      });
+    }
+
+  </script>
+  <script src="js/admin.js"></script>
+  <script src="../asset/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>

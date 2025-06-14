@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard | MobilBagus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/dashboardadmin.css">
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-penjualan.html">Daftar Penjualan</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+          <a href="data-garansi.html">Data Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="header" id="header">
+      <div id="menuToggle" style="cursor:pointer; font-size: 24px;">☰</div>
+      <div class="admin-btn">👤 Admin ▾</div>
+    </div>
+
+    <!-- Cards -->
+    <div class="cards">
+      <div class="card card-purple">
+        <h3>Total Penjualan</h3>
+        <h2></h2>
+        <p>Bulan ini</p>
+      </div>
+      <div class="card card-brown">
+        <h3>Pendapatan</h3>
+        <h2></h2>
+        <p>Bulan ini</p>
+      </div>
+      <div class="card card-green">
+        <h3>Stok Mobil</h3>
+        <h2></h2>
+        <p>Bulan ini</p>
+      </div>
+    </div>
+
+    <!-- Grafik -->
+    <div class="chart-box">
+      <h3>Grafik Penjualan</h3>
+      <div class="chart-container">
+        <div class="chart-left">
+          <canvas id="lineChart"></canvas>
+        </div>
+        <div class="chart-right">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+
+    <script>
+      // Panggil API dashboard
+      const token = sessionStorage.getItem("authToken");
+      fetch("http://localhost:8080/admindashboard", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          // Set ke elemen total penjualan
+          document.querySelector(".card-purple h2").textContent = data.total_penjualan;
+
+          // Format ke rupiah
+          const rupiah = new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            maximumFractionDigits: 0
+          });
+
+          // Pendapatan
+          document.querySelector(".card-brown h2").textContent = rupiah.format(data.total_pendapatan);
+
+          // Stok
+          document.querySelector(".card-green h2").textContent = data.total_stok;
+
+          // Render chart garis
+          const bulan = data.grafik_penjualan.map(item => `${item.bulan}/${item.tahun}`);
+          const total = data.grafik_penjualan.map(item => item.total);
+
+          const ctxLine = document.getElementById('lineChart').getContext('2d');
+          new Chart(ctxLine, {
+            type: 'line',
+            data: {
+              labels: bulan,
+              datasets: [{
+                label: 'Penjualan per Bulan',
+                data: total,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: false,
+              }]
+            }
+          });
+
+          // Render chart donat per merek
+          const merek = data.penjualan_per_merek.map(item => item.merek);
+          const jumlah = data.penjualan_per_merek.map(item => item.total);
+
+          const ctxDonut = document.getElementById('donutChart').getContext('2d');
+          new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+              labels: merek,
+              datasets: [{
+                data: jumlah,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#66bb6a', '#ab47bc'],
+              }]
+            }
+          });
+        })
+        .catch(err => console.error("Gagal memuat data dashboard:", err));
+
+
+
+
+
+      // 🟢 Pasang role di sini
+      const userData = sessionStorage.getItem("userData");
+      if (userData) {
+        const user = JSON.parse(userData);
+        const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        const adminBtn = document.getElementById("adminBtn");
+        if (adminBtn) {
+          adminBtn.textContent = `👤 ${role} ▾`;
+        }
+      }
+
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+
+      if (menuToggle && sidebar) {
+        menuToggle.addEventListener("click", () => {
+          sidebar.classList.toggle("active");
+          menuToggle.classList.toggle("active"); // 👈 Tambahkan baris ini
+        });
+      }
+
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          sessionStorage.removeItem("authToken");
+          sessionStorage.removeItem("userData");
+          window.location.href = "../login.html";
+        });
+      }
+
+    </script>
+    <script src="js/admin.js" defer></script>
+</body>
+
+</html>

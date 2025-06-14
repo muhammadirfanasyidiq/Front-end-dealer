@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Data Pelanggan | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidebarpel.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-pembayaran.html">Daftar Penjualan</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+          <a href="data-garansi.html">Data Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header">
+      <div>☰</div>
+      <div class="admin">👤 Admin ▾</div>
+    </div>
+
+    <!-- filter -->
+    <div class="search-box">
+      <label for="search">Nama Pelanggan :</label>
+      <input type="text" id="search" placeholder="masukkan nama Pelanggan">
+      <button onclick="alert('Fitur pencarian diaktifkan')">🔍</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nama</th>
+          <th>Email</th>
+          <th>Telepon</th>
+          <th>Alamat</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+
+    </table>
+
+
+
+    <!-- Modal Edit Pelanggan -->
+    <div class="modal fade" id="modalEditPelanggan" tabindex="-1" aria-labelledby="modalEditPelangganLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="formEditPelanggan" enctype="multipart/form-data">
+            <div class="modal-header">
+              <h5 class="modal-title" id="modalEditPelangganLabel">Edit Data Pelanggan</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="edit-id">
+              <div class="mb-3">
+                <label for="edit-nama" class="form-label">Nama</label>
+                <input type="text" class="form-control" id="edit-nama" required>
+              </div>
+              <div class="mb-3">
+                <label for="edit-email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="edit-email" required>
+              </div>
+              <div class="mb-3">
+                <label for="edit-telepon" class="form-label">Telepon</label>
+                <input type="text" class="form-control" id="edit-telepon" required>
+              </div>
+              <div class="mb-3">
+                <label for="edit-alamat" class="form-label">Alamat</label>
+                <input type="text" class="form-control" id="edit-alamat" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal detail Pelanggan -->
+    <div class="modal fade" id="modaldetailPelanggan" tabindex="-1" aria-labelledby="modaldetailPelangganLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalViewPelangganLabel">Detail Pelanggan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Nama:</strong> <span id="view-nama"></span></p>
+            <p><strong>Email:</strong> <span id="view-email"></span></p>
+            <p><strong>Telepon:</strong> <span id="view-telepon"></span></p>
+            <p><strong>Alamat:</strong> <span id="view-alamat"></span></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal histori -->
+    <div class="modal fade" id="modalHistori" tabindex="-1" aria-labelledby="modalHistoriLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalHistoriLabel">Histori Pelanggan : <span id="namaPelanggan"></span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+          </div>
+          <div class="modal-body">
+            <h6>Pembelian Mobil</h6>
+            <div class="table-responsive">
+              <table class="table table-bordered table-sm text-center align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Merk/Model</th>
+                    <th>Harga</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelHistori">
+                  <!-- Isi data pembelian dimasukkan lewat JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="pagination">
+      <button class="disabled">Previous</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>Next</button>
+    </div>
+  </div>
+  </div>
+  <script>
+
+    async function fetchPelangganData() {
+      try {
+        // ambil token
+        const token = sessionStorage.getItem('authToken');
+
+        if (!token) {
+          alert('Anda belum login atau sesi telah habis');
+          window.location.href = '../login.html';
+          return;
+        }
+
+        const response = await fetch('http://localhost:8080/pelanggan', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response JSON:', data); // untuk debugging
+        displayPelangganData(data.data); // ubah sesuai struktur yang benar
+
+
+      } catch (error) {
+        console.error('Error fetching pelanggan data:', error);
+        alert('Gagal mengambil data pelanggan: ' + error.message);
+      }
+    }
+
+    // Function to display pelanggan data in table
+    function displayPelangganData(pelangganList) {
+      const tbody = document.querySelector('tbody');
+      tbody.innerHTML = ''; // Clear existing data
+
+      // Check if we have data to display
+      if (!pelangganList || pelangganList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">Tidak ada data pelanggan</td></tr>';
+        return;
+      }
+
+      pelangganList.forEach(pelanggan => {
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+      <td>${pelanggan.id || ''}</td>
+      <td>${pelanggan.nama || ''}</td>
+      <td>${pelanggan.email || ''}</td>
+      <td>${pelanggan.telepon || ''}</td>
+      <td>${pelanggan.alamat || ''}</td>
+      <td class="aksi">
+        <button class="btn-edit" onclick="editPelanggan('${pelanggan.id}')">✏️</button>
+        <button class="btn-detail" onclick="detailPelanggan('${pelanggan.id}')">ℹ️</button>
+        <button class="btn-view" onclick="viewPelanggan('${pelanggan.id}')">👁️</button>
+        <button class="btn-delete" onclick="deletePelanggan('${pelanggan.id}')">🗑️</button>
+      </td>
+    `;
+
+        tbody.appendChild(row);
+      });
+    }
+
+
+
+
+
+
+    // edit
+    // Fungsi untuk membuka modal edit dan mengisi data
+    async function editPelanggan(id) {
+      try {
+        const token = sessionStorage.getItem('authToken');
+
+        const response = await fetch(`http://localhost:8080/pelanggan/detail/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) throw new Error('Gagal mengambil data pelanggan');
+
+        const data = await response.json();
+        const pelanggan = data.data;
+
+        if (!pelanggan) throw new Error('Data pelanggan tidak ditemukan');
+
+        // Isi form edit dengan data pelanggan
+        document.getElementById('edit-id').value = pelanggan.id;
+        document.getElementById('edit-nama').value = pelanggan.nama || '';
+        document.getElementById('edit-email').value = pelanggan.email || '';
+        document.getElementById('edit-telepon').value = pelanggan.telepon || '';
+        document.getElementById('edit-alamat').value = pelanggan.alamat || '';
+
+        // Tampilkan modal
+        const modal = new bootstrap.Modal(document.getElementById('modalEditPelanggan'));
+        modal.show();
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Gagal memuat data pelanggan: ' + error.message);
+      }
+    }
+
+
+    // Event listener untuk submit form edit
+    document.getElementById('formEditPelanggan').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const token = sessionStorage.getItem('authToken');
+      const id = document.getElementById('edit-id').value;
+
+      const updatedData = {
+        nama: document.getElementById('edit-nama').value,
+        email: document.getElementById('edit-email').value,
+        telepon: document.getElementById('edit-telepon').value,
+        alamat: document.getElementById('edit-alamat').value
+      };
+
+      try {
+        const response = await fetch(`http://localhost:8080/pelanggan/update/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (result.status) {
+            await Swal.fire({
+              icon: 'success',
+              title: 'Berhasil!',
+              text: 'Data pelanggan berhasil diperbarui!',
+              confirmButtonColor: '#3085d6'
+            });
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditPelanggan'));
+            modal.hide();
+            fetchPelangganData(); // reload tabel
+          } else {
+            await Swal.fire({
+              icon: 'warning',
+              title: 'Gagal',
+              text: result.message || 'Terjadi masalah saat update, tapi respons OK.',
+              confirmButtonColor: '#f0ad4e'
+            });
+          }
+        } else {
+          throw new Error(result.message || 'Gagal memperbarui data');
+        }
+      } catch (error) {
+        console.error('Gagal memperbarui data:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan',
+          text: 'Terjadi kesalahan saat memperbarui data: ' + error.message,
+          confirmButtonColor: '#d33'
+        });
+      }
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+    // histori
+    function formatRupiah(angka) {
+      // Fungsi sederhana untuk format angka ke format Rupiah (contoh: 2500000000 => Rp 2.500.000.000)
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(angka);
+    }
+    function viewPelanggan(id) {
+      const token = sessionStorage.getItem('authToken');
+      fetch(`http://localhost:8080/pelanggan/histori/${id}`
+        , {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('authToken')}`
+          }
+        }
+      )
+        .then(response => {
+          if (!response.ok) {
+            if (response.status === 404) {
+              // Tangani histori kosong
+              return { status: true, data: [] }; // bentuk data kosong
+            }
+            throw new Error("Gagal mengambil data histori pelanggan");
+          }
+          return response.json();
+        })
+        .then(result => {
+          if (!result.status) {
+            throw new Error("Gagal mendapatkan data histori");
+          }
+
+          const data = result.data;
+
+          document.getElementById("namaPelanggan").textContent = data.length ? data[0].nama : "-";
+
+          const tbody = document.getElementById("tabelHistori");
+          tbody.innerHTML = "";
+
+          if (data.length === 0) {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td colspan="4" style="text-align:center;">Tidak ada histori penjualan.</td>`;
+            tbody.appendChild(tr);
+          } else {
+            data.forEach(item => {
+              const tr = document.createElement("tr");
+
+              const tanggalSplit = item.tanggal_transaksi.split("-");
+              const tanggalFormatted = `${tanggalSplit[2]}/${tanggalSplit[1]}/${tanggalSplit[0]}`;
+
+              const merkModel = `${item.merek} / ${item.model}`;
+              const hargaFormatted = formatRupiah(item.total_harga);
+              const statusFormatted = item.status_pembayaran.charAt(0).toUpperCase() + item.status_pembayaran.slice(1);
+
+              tr.innerHTML = `
+              <td>${tanggalFormatted}</td>
+              <td>${merkModel}</td>
+              <td>${hargaFormatted}</td>
+              <td>${statusFormatted}</td>
+            `;
+              tbody.appendChild(tr);
+            });
+          }
+
+          const modal = new bootstrap.Modal(document.getElementById('modalHistori'));
+          modal.show();
+        })
+        .catch(error => {
+          console.error("Terjadi kesalahan:", error);
+          alert("Tidak dapat mengambil data histori pelanggan.");
+        });
+    }
+
+
+
+
+
+
+
+    async function detailPelanggan(id) {
+      try {
+        // Validasi ID
+        if (!id) {
+          throw new Error('ID pelanggan tidak valid');
+        }
+
+        const token = sessionStorage.getItem('authToken');
+
+        if (!token) {
+          throw new Error('Token autentikasi tidak ditemukan');
+        }
+
+        const response = await fetch(`http://localhost:8080/pelanggan/detail/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Validasi struktur data
+        if (!data || !data.data) {
+          throw new Error('Format data tidak valid');
+        }
+
+        const pelanggan = data.data;
+
+        // Tampilkan data ke dalam modal
+        document.getElementById('view-nama').textContent = pelanggan.nama || '-';
+        document.getElementById('view-email').textContent = pelanggan.email || '-';
+        document.getElementById('view-telepon').textContent = pelanggan.telepon || '-';
+        document.getElementById('view-alamat').textContent = pelanggan.alamat || '-';
+
+        // Tampilkan modal (perbaikan ID)
+        const modal = new bootstrap.Modal(document.getElementById('modaldetailPelanggan'));
+        modal.show();
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Gagal menampilkan data pelanggan: ' + error.message);
+      }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // delete
+    async function deletePelanggan(id) {
+      const token = sessionStorage.getItem('authToken');
+
+      const result = await Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: `Data pelanggan dengan ID: ${id} akan dihapus secara permanen.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const response = await fetch(`http://localhost:8080/pelanggan/delete/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.status === 404) {
+          throw new Error(data.message || 'Data tidak ditemukan');
+        }
+        if (response.status === 500) {
+          throw new Error(data.message || 'Gagal menghapus data');
+        }
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        if (data.status === true) {
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: data.message || "Data berhasil dihapus!",
+            confirmButtonColor: '#3085d6'
+          });
+          fetchPelangganData();
+        } else {
+          throw new Error(data.message || "Gagal menghapus data");
+        }
+
+      } catch (error) {
+        console.error("Terjadi kesalahan:", error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan',
+          text: error.message || "Terjadi kesalahan saat menghapus data.",
+          confirmButtonColor: '#d33'
+        });
+      }
+    }
+
+
+    // Search functionality
+    document.getElementById('search').addEventListener('input', function (e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+
+      rows.forEach(row => {
+        const nama = row.cells[1].textContent.toLowerCase();
+        if (nama.includes(searchTerm)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+
+    // Fetch data when page loads
+    document.addEventListener('DOMContentLoaded', fetchPelangganData);
+
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "../login.html";
+      });
+    }
+  </script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="js/admin.js" defer></script>
+  <script src="../asset/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>
