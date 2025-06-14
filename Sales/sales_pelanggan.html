@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Pelanggan</title>
+    <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/sales.css" />
+</head>
+
+<body class="bg-light">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <div class="main">
+        <div class="container-fluid">
+            <div class="header" id="header"></div>
+
+            <!-- Search Form -->
+            <div
+                class="my-3 p-3 bg-body rounded d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div class="d-flex align-items-center justify-content-center flex-wrap gap-2">
+                    <label for="search" class="fw-bold mb-0 me-2">Nama Pelanggan:</label>
+                    <div class="input-group m-3">
+                        <input type="text" id="search" class="form-control" placeholder="Masukkan nama pelanggan" />
+                        <button class="btn btn-outline-secondary rounded" type="button" id="btnCari">🔍</button>
+                        <button class="btn btn-outline-danger rounded" type="button" id="btnBatal"
+                            style="display: none;">❌</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Tambah -->
+            <div class="d-flex justify-content-end mb-2">
+                <button id="btnTambahData" class="btn btn-add btn-primary">Tambah Data</button>
+            </div>
+
+            <!-- Tabel -->
+            <div class="my-3 p-3 bg-body rounded">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-2 mb-3 border-bottom">
+                    <h3>Data Pelanggan</h3>
+                </div>
+                <div id="loader" class="text-center my-3" style="display: none;">
+                    <div class="spinner-border text-primary" role="status"><span
+                            class="visually-hidden">Loading...</span></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center align-middle text-nowrap">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama</th>
+                                <th>Email</th>
+                                <th>Telepon</th>
+                                <th>Alamat</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <!-- Modal Tambah -->
+                <div class="modal fade" id="modalTambah" tabindex="-1" aria-labelledby="modalTambahLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <form id="formPelanggan">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalTambahLabel">Tambah Pelanggan</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Tutup"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="nama" class="form-label">Nama</label>
+                                        <input type="text" class="form-control" placeholder="Masukkan nama pelanggan"
+                                            id="nama" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" placeholder="Masukkan email pelanggan"
+                                            id="email" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="telepon" class="form-label">Telepon</label>
+                                        <input type="text" class="form-control" placeholder="Masukkan telepon pelanggan"
+                                            id="telepon" required />
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="alamat" class="form-label">Alamat</label>
+                                        <input type="text" class="form-control" placeholder="Masukkan alamat pelanggan"
+                                            id="alamat" required />
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-primary">Simpan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Detail -->
+                <div class="modal fade" id="modalDetail" tabindex="-1" aria-labelledby="modalDetailLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content shadow rounded-4">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title fw-semibold" id="modalDetailLabel">Detail</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold">Nama Pelanggan</label>
+                                        <input type="text" class="form-control" id="detailNama" readonly />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold">No Telepon</label>
+                                        <input type="text" class="form-control" id="detailTelepon" readonly />
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold">Email</label>
+                                        <input type="text" class="form-control" id="detailEmail" readonly />
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-semibold">Alamat</label>
+                                        <input type="text" class="form-control" id="detailAlamat" readonly />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="../asset/bootstrap/js/bootstrap.bundle.min.js" defer></script>
+    <script src="js/sales.js"></script>
+    <script>
+        let semuaPelanggan = [];
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = sessionStorage.getItem("authToken");
+            if (!token) {
+                alert("Token tidak ditemukan. Silakan login kembali.");
+                window.location.href = "/login.html";
+                return;
+            }
+
+            const formPelanggan = document.getElementById("formPelanggan");
+            const btnTambahData = document.getElementById("btnTambahData");
+            const modalTambah = new bootstrap.Modal(document.getElementById("modalTambah"));
+            const modalDetail = new bootstrap.Modal(document.getElementById("modalDetail"));
+            const tbody = document.querySelector("tbody");
+            const searchInput = document.getElementById("search");
+            const btnCari = document.getElementById("btnCari");
+            const btnBatal = document.getElementById("btnBatal");
+            const loader = document.getElementById("loader");
+
+            // Show modal on button click
+            btnTambahData.addEventListener("click", () => modalTambah.show());
+
+            // Search
+            btnCari.addEventListener("click", function () {
+                const keyword = searchInput.value.trim().toLowerCase();
+                if (!keyword) {
+                    alert("Masukkan nama pelanggan untuk mencari.");
+                    return;
+                }
+
+                const hasil = semuaPelanggan.filter(p => p.nama.toLowerCase().includes(keyword));
+                tampilkanData(hasil);
+                btnBatal.style.display = "inline-block";
+            });
+
+            btnBatal.addEventListener("click", function () {
+                searchInput.value = "";
+                tampilkanData(semuaPelanggan);
+                btnBatal.style.display = "none";
+            });
+
+            // Fetch data awal
+            loader.style.display = "block";
+            fetch("http://localhost:8080/salespelanggan", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+                .then(res => res.json())
+                .then(result => {
+                    semuaPelanggan = result.data || [];
+                    tampilkanData(semuaPelanggan);
+                })
+                .catch(() => {
+                    tbody.innerHTML = `<tr><td colspan="6">Gagal memuat data</td></tr>`;
+                })
+                .finally(() => {
+                    loader.style.display = "none";
+                });
+
+            // Form submit
+            formPelanggan.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const dataBaru = {
+                    nama: document.getElementById("nama").value,
+                    email: document.getElementById("email").value,
+                    telepon: document.getElementById("telepon").value,
+                    alamat: document.getElementById("alamat").value
+                };
+
+                fetch("http://localhost:8080/salespelanggan/create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(dataBaru)
+                })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.status) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Sukses!',
+                                text: 'Data berhasil ditambahkan!',
+                                confirmButtonColor: '#3085d6'
+                            }).then(() => {
+                                // Ambil ulang semua data dari server
+                                fetch("http://localhost:8080/salespelanggan", {
+                                    method: "GET",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "Authorization": `Bearer ${token}`
+                                    }
+                                })
+                                    .then(res => res.json())
+                                    .then(result => {
+                                        semuaPelanggan = result.data || [];
+                                        tampilkanData(semuaPelanggan);
+                                    });
+
+                                formPelanggan.reset();
+                                modalTambah.hide();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: 'Gagal menambahkan data: ' + result.message
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi Kesalahan',
+                            text: 'Gagal melakukan permintaan ke server.'
+                        });
+                    });
+            });
+
+
+
+            // Tampilkan data
+            function tampilkanData(data) {
+                tbody.innerHTML = "";
+                if (!data.length) {
+                    tbody.innerHTML = `<tr><td colspan="6">Tidak ada hasil</td></tr>`;
+                    return;
+                }
+                data.forEach(p => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td>${p.id}</td>
+                    <td>${p.nama}</td>
+                    <td>${p.email}</td>
+                    <td>${p.telepon}</td>
+                    <td>${p.alamat}</td>
+                    <td><button class="btn btn-info btn-sm" onclick="tampilkanDetailById('${p.id}')">Detail</button></td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+        });
+
+        // Fungsi global
+        function tampilkanDetailById(id) {
+            const pelanggan = semuaPelanggan.find(p => p.id === id);
+            if (!pelanggan) return alert("Pelanggan tidak ditemukan.");
+
+            document.getElementById("detailNama").value = pelanggan.nama;
+            document.getElementById("detailTelepon").value = pelanggan.telepon;
+            document.getElementById("detailEmail").value = pelanggan.email;
+            document.getElementById("detailAlamat").value = pelanggan.alamat;
+
+            const modal = new bootstrap.Modal(document.getElementById("modalDetail"));
+            modal.show();
+        }
+
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+</body>
+
+</html>

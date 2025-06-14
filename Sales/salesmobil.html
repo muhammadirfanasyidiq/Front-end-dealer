@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Manajemen Mobil | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sales.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <!-- <link rel="stylesheet" href="../asset/css/global.css"> -->
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <div class="header" id="header"></div>
+
+    <!-- filter -->
+    <div class="filter-box">
+      <div class="filter-group">
+        <label for="filter-merek">Merek</label>
+        <select id="filter-merek">
+          <option value="">Semua Merek</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-harga">Harga</label>
+        <select id="filter-harga">
+          <option value="">Semua Harga</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-tahun">Tahun</label>
+        <select id="filter-tahun">
+          <option value="">Semua Tahun</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <button class="filter-button" onclick="applyFilter()">Filter</button>
+      </div>
+      <div class="filter-group">
+        <button class="filter-button btn btn-danger" style="width: 150px;" onclick="resetFilter()">Batal</button>
+      </div>
+    </div>
+
+    <div id="result"></div>
+
+
+
+    <!-- modal  -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content p-4" id="modalContent">
+          <!-- Detail mobil akan diisi via JS -->
+        </div>
+      </div>
+    </div>
+
+
+    <!-- modal jual -->
+    <div class="modal fade" id="modalTransaksi" tabindex="-1" aria-labelledby="judulModal" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form id="formTransaksi">
+          <div class="modal-content ">
+            <div class="modal-header border-0">
+              <h5 class="modal-title fw-bold" id="judulModal">Tambah Transaksi</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Nama Pelanggan</label>
+                  <select class="form-select" name="id_pelanggan" id="dropdownPelanggan" required>
+                    <option value="">-- Pilih Pelanggan --</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Nama Mobil</label>
+                  <input type="text" class="form-control" id="namaMobil" disabled>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Nama Sales</label>
+                  <input type="text" class="form-control" name="nama_sales" id="namaSales" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Total Harga</label>
+                  <input type="text" class="form-control" id="totalHarga" disabled>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Metode Pembayaran</label>
+                  <select class="form-select" name="metode_pembayaran" id="metodePembayaran" required>
+                    <option value="">-- Pilih Metode Pembayaran --</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Transfer">Transfer Bank</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Jumlah Bayar</label>
+                  <input type="text" class="form-control" name="jumlah_bayar" id="jumlahBayar" required>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Tanggal</label>
+                  <input type="date" class="form-control" name="tanggal_penjualan" id="tanggalPenjualan" required>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">❌ Batal</button>
+              <button type="submit" class="btn btn-primary">➕ Simpan</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchMobilData();
+        displayData();
+      });
+
+      let allData = [];
+
+      async function fetchMobilData() {
+        const token = sessionStorage.getItem("authToken");
+        try {
+          const response = await fetch("http://localhost:8080/salespenjualan", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+          const result = await response.json();
+
+          if (result.status && Array.isArray(result.data)) {
+            allData = result.data;
+            populateFilters(allData);
+            displayData(allData);
+          } else {
+            console.error("Data tidak valid");
+          }
+        } catch (error) {
+          console.error("Gagal mengambil data:", error);
+        }
+      }
+
+      function populateFilters(data) {
+        const merekSet = new Set();
+        const tahunSet = new Set();
+        const hargaSet = new Set();
+
+        data.forEach(item => {
+          merekSet.add(item.merek);
+          tahunSet.add(item.tahun);
+          hargaSet.add(item.harga);
+        });
+
+        fillSelect("filter-merek", Array.from(merekSet));
+        fillSelect("filter-tahun", Array.from(tahunSet).sort((a, b) => b - a));
+        fillSelect("filter-harga", ["<500 juta", "500-1 M", ">1 M"]);
+      }
+
+      function fillSelect(id, options) {
+        const select = document.getElementById(id);
+        options.forEach(opt => {
+          const option = document.createElement("option");
+          option.value = opt;
+          option.textContent = opt;
+          select.appendChild(option);
+        });
+      }
+
+      function applyFilter() {
+        const merek = document.getElementById("filter-merek").value;
+        const tahun = document.getElementById("filter-tahun").value;
+        const harga = document.getElementById("filter-harga").value;
+
+        const filtered = allData.filter(item => {
+          return (
+            (!merek || item.merek === merek) &&
+            (!tahun || item.tahun === tahun) &&
+            (!harga || filterHarga(item.harga, harga))
+          );
+        });
+
+        displayData(filtered);
+      }
+
+      function filterHarga(nilai, kategori) {
+        const harga = parseFloat(nilai);
+        if (kategori === "<500 juta") return harga < 500_000_000;
+        if (kategori === "500-1 M") return harga >= 500_000_000 && harga <= 1_000_000_000;
+        if (kategori === ">1 M") return harga > 1_000_000_000;
+        return true;
+      }
+
+      function resetFilter() {
+        document.getElementById("filter-merek").value = "";
+        document.getElementById("filter-tahun").value = "";
+        document.getElementById("filter-harga").value = "";
+        displayData(allData);
+      }
+
+      function displayData(data = []) {
+        const container = document.getElementById("result");
+        container.innerHTML = "";
+
+        if (data.length === 0) {
+          container.innerHTML = "<p class='text-center'>Tidak ada data ditemukan.</p>";
+          return;
+        }
+
+        const row = document.createElement("div");
+        row.className = "row";
+
+        data.forEach(mobil => {
+          const col = document.createElement("div");
+          col.className = "col-12 col-sm-6 col-md-3 px-2 mb-4";
+          col.innerHTML = `
+            <div class="card h-90 w-100">
+              <img src="http://localhost:8080/uploads/${mobil.gambar}" class="card-img-top" style="height:200px; object-fit:cover;" alt="${mobil.merek} ${mobil.model}">
+              <div class="card-body">
+                <h5 class="card-title">${mobil.merek} ${mobil.model}</h5>
+                <p class="card-text">${mobil.tahun} | ${mobil.sistem_penggerak.toUpperCase()} | ${mobil.tipe_mesin}</p>
+                <p class="text-primary fw-bold">Rp ${parseInt(mobil.harga).toLocaleString('id-ID')}</p>
+              </div>
+              <div class="card-footer bg-white border-0">
+                <button class="btn btn-primary w-100" onclick="viewDetail(${mobil.id})">Lihat Detail</button>
+              </div>
+            </div>
+          `;
+          row.appendChild(col);
+        });
+
+        container.appendChild(row);
+      }
+
+
+      // detail
+      function viewDetail(id) {
+        const token = sessionStorage.getItem("authToken");
+        fetch(`http://localhost:8080/salespenjualan/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        })
+          .then(res => res.json())
+          .then(response => {
+            const mobil = response.data; // Ambil dari "data", bukan langsung
+
+            if (!mobil) {
+              alert("Data tidak ditemukan");
+              return;
+            }
+
+            const modalHTML = `
+            <div class="text-center mb-3">
+              <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h4 class="fw-bold">${mobil.merek} ${mobil.model}</h4>
+              <img src="http://localhost:8080/uploads/${mobil.gambar}" class="img-fluid" style="max-height: 200px; object-fit: contain;" alt="${mobil.merek}">
+              <h5 class="text-primary fw-bold mt-3">Rp ${parseInt(mobil.harga).toLocaleString('id-ID')}</h5>
+              <span class="badge bg-success">Tersedia</span> <small>Stok: ${mobil.stok} unit</small>
+            </div>
+
+            <hr>
+
+            <div class="row">
+              <div class="col-md-6">
+                <h6><strong>Spesifikasi</strong></h6>
+                <p><strong>Tipe Mesin:</strong> ${mobil.tipe_mesin}</p>
+                <p><strong>Tenaga:</strong> ${mobil.tenaga}</p>
+                <p><strong>Torsi:</strong> ${mobil.torsi}</p>
+                <p><strong>Sistem Penggerak:</strong> ${mobil.sistem_penggerak.toUpperCase()}</p>
+              </div>
+              <div class="col-md-6">
+                <h6><br></h6>
+                <p><strong>Fitur Keamanan:</strong> ${mobil.fitur_keamanan}</p>
+                <p><strong>Sistem Hiburan:</strong> ${mobil.sistem_hiburan}</p>
+                <p><strong>Konektivitas:</strong> ${mobil.konektivitas}</p>
+                <p><strong>AC:</strong> ${mobil.ac}</p>
+              </div>
+            </div>
+
+            <div class="mt-3 text-end">
+              <button class="btn btn-success btn-jual" data-mobil-id="${mobil.id}" data-bs-dismiss="modal">Jual</button>
+            </div>
+          `;
+
+
+            document.getElementById('modalContent').innerHTML = modalHTML;
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+          })
+          .catch(err => {
+            console.error("Error:", err);
+            alert("Gagal mengambil detail mobil.");
+          });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const token = sessionStorage.getItem("authToken");
+        const pelangganSelect = document.getElementById("dropdownPelanggan");
+        const namaMobilInput = document.getElementById("namaMobil");
+        const totalHargaInput = document.getElementById("totalHarga");
+        const jumlahBayarInput = document.getElementById("jumlahBayar");
+
+        // Fetch pelanggan
+        fetch("http://localhost:8080/salespelanggan", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        })
+          .then(res => res.json())
+          .then(json => {
+            if (json.status && Array.isArray(json.data)) {
+              json.data.forEach(p => {
+                const option = document.createElement("option");
+                option.value = p.id;
+                option.textContent = p.nama;
+                pelangganSelect.appendChild(option);
+              });
+            }
+          });
+
+        // Contoh: Saat buka modal isi otomatis info mobil
+        document.addEventListener("click", function (e) {
+          if (e.target && e.target.classList.contains("btn-jual")) {
+            const idMobil = e.target.getAttribute("data-mobil-id");
+            const token = sessionStorage.getItem("authToken");
+
+            fetch(`http://localhost:8080/salespenjualan/${idMobil}`, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              }
+            })
+              .then(res => res.json())
+              .then(json => {
+                const m = json.data;
+                document.querySelector('#formTransaksi input[name="id_mobil"]')?.remove();
+
+                const hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = "id_mobil";
+                hiddenInput.value = m.id;
+                document.getElementById("formTransaksi").appendChild(hiddenInput);
+
+                document.getElementById("namaMobil").value = `${m.merek} ${m.model}`;
+                const harga = parseInt(m.harga);
+                document.getElementById("totalHarga").value = `Rp. ${harga.toLocaleString("id-ID")}`;
+                document.getElementById("jumlahBayar").value = `Rp. ${harga.toLocaleString("id-ID")}`;
+                const userData = JSON.parse(sessionStorage.getItem("userData"));
+                if (userData && userData.username) {
+                  document.getElementById("namaSales").value = userData.username;
+                }
+
+                const modal = new bootstrap.Modal(document.getElementById("modalTransaksi"));
+                modal.show();
+              })
+              .catch(err => console.error("Gagal ambil data mobil:", err));
+          }
+        });
+      });
+
+      document.getElementById("formTransaksi").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const token = sessionStorage.getItem("authToken");
+        const form = e.target;
+
+        const mobilId = form.querySelector('input[name="id_mobil"]').value;
+        const pelangganId = document.getElementById("dropdownPelanggan").value;
+        const totalHargaStr = document.getElementById("totalHarga").value.replace(/[^\d]/g, '');
+        const jumlahBayarStr = document.getElementById("jumlahBayar").value.replace(/[^\d]/g, '');
+        const tanggalPenjualan = document.getElementById("tanggalPenjualan").value;
+        const metodePembayaran = document.getElementById("metodePembayaran").value;
+
+        const totalHarga = parseInt(totalHargaStr, 10);
+        const jumlahBayar = parseInt(jumlahBayarStr, 10);
+
+        const userData = JSON.parse(sessionStorage.getItem("userData"));
+        const userId = userData?.id;
+
+        if (!mobilId || !pelangganId || !userId || !metodePembayaran) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Data Belum Lengkap',
+            text: 'Pastikan semua data transaksi telah diisi.'
+          });
+          return;
+        }
+
+        const data = {
+          mobil_id: mobilId,
+          pelanggan_id: pelangganId,
+          total_harga: totalHarga,
+          jumlah_bayar: jumlahBayar,
+          tanggal_transaksi: tanggalPenjualan,
+          user_id: userId,
+          metode_pembayaran: metodePembayaran
+        };
+
+        fetch("http://localhost:8080/salespenjualan/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(data)
+        })
+          .then(res => res.json())
+          .then(response => {
+            console.log("Response dari server:", response);
+            if (response.status) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Transaksi berhasil disimpan!'
+              }).then(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById("modalTransaksi"));
+                modal.hide();
+                form.reset();
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menyimpan',
+                text: response.message || 'Periksa kembali data transaksi Anda.'
+              });
+            }
+          })
+          .catch(err => {
+            console.error("Error saat menyimpan transaksi:", err);
+            Swal.fire({
+              icon: 'error',
+              title: 'Kesalahan Server',
+              text: 'Terjadi kesalahan saat mengirim data.'
+            });
+          });
+      });
+
+
+
+    </script>
+    <script src="js/sales.js" defer></script>
+    <script src="../asset/bootstrap/js/bootstrap.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <!-- <script src="../asset/js/data.js" defer></script> -->
+</body>
+
+</html>
