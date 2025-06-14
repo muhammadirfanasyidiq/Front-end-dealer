@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Manajemen Mobil | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <!-- <link rel="stylesheet" href="../asset/css/global.css"> -->
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-penjualan.html">Daftar Penjualan</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+          <a href="data-garansi.html">Data Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header">
+      <div>☰</div>
+      <div class="admin-btn">👤 Admin ▾</div>
+    </div>
+
+    <!-- filter -->
+    <div class="filter-box">
+      <div class="filter-group">
+        <label for="filter-merek">Merek</label>
+        <select id="filter-merek">
+          <option value="">Semua Merek</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-harga">Harga</label>
+        <select id="filter-harga">
+          <option value="">Semua Harga</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-tahun">Tahun</label>
+        <select id="filter-tahun">
+          <option value="">Semua Tahun</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <button class="filter-button" onclick="applyFilter()">Filter</button>
+      </div>
+      <div class="filter-group">
+        <button class="filter-button btn btn-danger" onclick="resetFilter()">Batal</button>
+      </div>
+    </div>
+
+    <div id="result"></div>
+
+
+
+    <!-- modal tambah -->
+    <div>
+      <!-- Tombol Tambah -->
+      <button class="add-btn" onclick="openModal()">Tambah Data Mobil</button>
+      <!-- Modal Form Tambah Mobil -->
+      <div class="modal" id="tambahMobilModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Tambah Mobil Baru</h2>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+          </div>
+          <div class="modal-body">
+            <form id="formTambahMobil" enctype="multipart/form-data">
+              <!-- Baris 1 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="merek">Merek</label>
+                  <input type="text" id="merek" name="merek" placeholder="Masukkan merek" required>
+                </div>
+                <div class="form-group">
+                  <label for="model">Model</label>
+                  <input type="text" id="model" name="model" placeholder="Masukkan model" required>
+                </div>
+              </div>
+
+              <!-- Baris 2 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tahun">Tahun</label>
+                  <input type="number" id="tahun" name="tahun" placeholder="Masukkan tahun" min="1900" max="2099"
+                    step="1" required>
+                </div>
+                <div class="form-group">
+                  <label for="harga">Harga (Rp)</label>
+                  <input type="number" id="harga" name="harga" placeholder="Masukkan harga" step="0.01" required>
+                </div>
+              </div>
+
+              <!-- Baris 3 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="stok">Stok</label>
+                  <input type="number" id="stok" name="stok" placeholder="Masukkan stok" min="0" step="1" required>
+                </div>
+              </div>
+
+              <!-- Gambar -->
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label for="gambar">Foto Mobil</label>
+                  <div class="file-input">
+                    <input type="file" id="gambar" name="gambar" accept="image/*" hidden required>
+                    <button type="button" class="browse-btn"
+                      onclick="document.getElementById('gambar').click()">Browse...</button>
+                    <span id="fileSelected">No File Selected</span>
+                  </div>
+                  <small>Unggah Gambar Mobil (JPG, PNG, GIF)</small>
+                </div>
+              </div>
+
+              <h3>Spesifikasi</h3>
+
+              <!-- Spesifikasi Baris 1 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="tipe_mesin">Tipe Mesin</label>
+                  <input type="text" id="tipe_mesin" name="tipe_mesin" placeholder="Masukkan tipe mesin" required>
+                </div>
+                <div class="form-group">
+                  <label for="tenaga">Tenaga (HP)</label>
+                  <input type="text" id="tenaga" name="tenaga" placeholder="Masukkan tenaga mesin" required>
+                </div>
+              </div>
+
+              <!-- Spesifikasi Baris 2 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="torsi">Torsi</label>
+                  <input type="text" id="torsi" name="torsi" placeholder="Masukkan torsi mesin" required>
+                </div>
+                <div class="form-group">
+                  <label for="sistem_penggerak">Sistem Penggerak</label>
+                  <select id="sistem_penggerak" name="sistem_penggerak" required>
+                    <option value="fwd">FWD</option>
+                    <option value="rwd">RWD</option>
+                    <option value="awd">AWD</option>
+                    <option value="4wd">4WD</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Spesifikasi Baris 3 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="fitur_keamanan">Fitur Keamanan</label>
+                  <input type="text" id="fitur_keamanan" name="fitur_keamanan" placeholder="Masukkan fitur keamanan"
+                    required>
+                </div>
+                <div class="form-group">
+                  <label for="sistem_hiburan">Sistem Hiburan</label>
+                  <input type="text" id="sistem_hiburan" name="sistem_hiburan" placeholder="Masukkan sistem hiburan"
+                    required>
+                </div>
+              </div>
+
+              <!-- Spesifikasi Baris 4 -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="konektivitas">Konektivitas</label>
+                  <input type="text" id="konektivitas" name="konektivitas" placeholder="Masukkan konektivitas" required>
+                </div>
+                <div class="form-group">
+                  <label for="ac">AC</label>
+                  <input type="text" id="ac" name="ac" placeholder="Masukkan jenis AC" required>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn cancel" onclick="closeModal()">Batal</button>
+                <button type="submit" class="btn submit">Tambah</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div id="mobil-container" class="cards">
+        <!-- Data mobil akan dimuat di sini -->
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button disabled>Previous</button>
+        <button class="active">1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>Next</button>
+      </div>
+    </div>
+
+
+
+
+    <!-- Modal Form Edit Mobil -->
+    <div class="modal" id="editMobilModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Edit Data Mobil</h2>
+          <span class="close-btn" onclick="closeEditModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="formEditMobil" enctype="multipart/form-data">
+            <input type="hidden" id="edit_id" name="id">
+
+            <!-- Baris 1 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit_merek">Merek</label>
+                <input type="text" id="edit_merek" name="merek" placeholder="Masukkan merek" required>
+              </div>
+              <div class="form-group">
+                <label for="edit_model">Model</label>
+                <input type="text" id="edit_model" name="model" placeholder="Masukkan model" required>
+              </div>
+            </div>
+
+            <!-- Baris 2 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit_tahun">Tahun</label>
+                <input type="number" id="edit_tahun" name="tahun" placeholder="Masukkan tahun" min="1900" max="2099"
+                  step="1" required>
+              </div>
+              <div class="form-group">
+                <label for="edit_harga">Harga (Rp)</label>
+                <input type="number" id="edit_harga" name="harga" placeholder="Masukkan harga" step="0.01" required>
+              </div>
+            </div>
+
+            <!-- Baris 3 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit_stok">Stok</label>
+                <input type="number" id="edit_stok" name="stok" placeholder="Masukkan stok" min="0" step="1" required>
+              </div>
+              <div class="form-group">
+                <label>Gambar Saat Ini</label>
+                <div id="currentImageContainer"></div>
+              </div>
+            </div>
+
+            <!-- Gambar -->
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="edit_gambar">Ubah Foto Mobil</label>
+                <div class="file-input">
+                  <input type="file" id="edit_gambar" name="gambar" accept="image/*" hidden>
+                  <button type="button" class="browse-btn"
+                    onclick="document.getElementById('edit_gambar').click()">Browse...</button>
+                  <span id="edit_fileSelected">No File Selected</span>
+                </div>
+                <small>Unggah Gambar Baru (JPG, PNG, GIF, maks 2MB)</small>
+              </div>
+            </div>
+
+            <h3>Spesifikasi</h3>
+
+            <!-- Spesifikasi Baris 1 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit_tipe_mesin">Tipe Mesin</label>
+                <input type="text" id="edit_tipe_mesin" name="tipe_mesin" placeholder="Masukkan tipe mesin" required>
+              </div>
+              <div class="form-group">
+                <label for="edit_tenaga">Tenaga (HP)</label>
+                <input type="text" id="edit_tenaga" name="tenaga" placeholder="Masukkan tenaga mesin" required>
+              </div>
+            </div>
+
+            <!-- Spesifikasi Baris 2 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit_torsi">Torsi</label>
+                <input type="text" id="edit_torsi" name="torsi" placeholder="Masukkan torsi mesin" required>
+              </div>
+              <div class="form-group">
+                <label for="edit_sistem_penggerak">Sistem Penggerak</label>
+                <select id="edit_sistem_penggerak" name="sistem_penggerak" required>
+                  <option value="fwd">FWD</option>
+                  <option value="rwd">RWD</option>
+                  <option value="awd">AWD</option>
+                  <option value="4wd">4WD</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Spesifikasi Baris 3 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit_fitur_keamanan">Fitur Keamanan</label>
+                <input type="text" id="edit_fitur_keamanan" name="fitur_keamanan" placeholder="Masukkan fitur keamanan"
+                  required>
+              </div>
+              <div class="form-group">
+                <label for="edit_sistem_hiburan">Sistem Hiburan</label>
+                <input type="text" id="edit_sistem_hiburan" name="sistem_hiburan" placeholder="Masukkan sistem hiburan"
+                  required>
+              </div>
+            </div>
+
+            <!-- Spesifikasi Baris 4 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit_konektivitas">Konektivitas</label>
+                <input type="text" id="edit_konektivitas" name="konektivitas" placeholder="Masukkan konektivitas"
+                  required>
+              </div>
+              <div class="form-group">
+                <label for="edit_ac">AC</label>
+                <input type="text" id="edit_ac" name="ac" placeholder="Masukkan jenis AC" required>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn cancel" onclick="closeEditModal()">Batal</button>
+              <button type="submit" class="btn submit">Simpan Perubahan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <!-- Modal Form Detail -->
+    <div class="modal fade" id="modalDetail" tabindex="-1" aria-labelledby="modalDetailLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold" id="modalDetailLabel">Toyota Innova 2023</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Bagian Gambar dan Harga (Atas) -->
+            <div class="text-center mb-4">
+              <img id="gambarMobil" src=" " class="car-image mb-3">
+              <div class="price-section">
+                <h4 class="text-primary mb-2 fw-bold">Rp. <span id="hargaMobil">350.000.000</span></h4>
+                <span class="badge badge-available px-3 py-2">Tersedia</span>
+                <p class="mt-2 mb-0 text-muted">Stok: <span id="stokMobil">5</span> unit</p>
+              </div>
+            </div>
+
+            <!-- Bagian Spesifikasi (Bawah) -->
+            <div>
+              <h5 class="mb-3 fw-bold text-dark">Spesifikasi</h5>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="spec-item">
+                    <span class="spec-label">Tipe Mesin:</span>
+                    <span id="tipeMesin">2.0L 4-cylinder</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Tenaga:</span>
+                    <span id="tenaga">139 HP</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Torsi:</span>
+                    <span id="torsi">183 Nm</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Sistem Penggerak:</span>
+                    <span id="penggerak">RWD</span>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="spec-item">
+                    <span class="spec-label">Fitur Keamanan:</span>
+                    <span id="fiturKeamanan">6 Airbag</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Sistem Hiburan:</span>
+                    <span id="hiburan">8-inch Touchscreen</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">Konektivitas:</span>
+                    <span id="konektivitas">Bluetooth, USB</span>
+                  </div>
+                  <div class="spec-item">
+                    <span class="spec-label">AC:</span>
+                    <span id="ac">Dual Zone Automatic</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button class="edit" id="btnEditDetail">✏️</button>
+            <button class="delete" id="btnDeleteDetail">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        fetchMobilData();
+        displayData();
+      });
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("hidden");
+      }
+      function toggleMenu(menuId) {
+        const submenu = document.getElementById('submenu-' + menuId);
+        const arrow = document.getElementById('arrow-' + menuId);
+        submenu.classList.toggle('show');
+        arrow.classList.toggle('rotate');
+      }
+
+
+
+
+
+
+      // Tandai link aktif
+      const currentPath = window.location.pathname.split("/").pop();
+      const allLinks = document.querySelectorAll('.menu a');
+
+      allLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('active');
+
+          const submenu = link.closest('.submenu');
+          if (submenu) {
+            submenu.classList.add('show');
+            const menuId = submenu.id.split('-')[1];
+            const arrow = document.getElementById('arrow-' + menuId);
+            if (arrow) arrow.classList.add('rotate');
+          }
+        }
+      });
+      // Add this to your existing JavaScript
+      function openTambahMobilModal() {
+        document.getElementById('tambahMobilModal').style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+      }
+
+      function closeModal() {
+        document.getElementById('tambahMobilModal').style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
+      }
+
+      // Handle the file input display
+      document.getElementById('gambar').addEventListener('change', function (e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'No File Selected';
+        document.getElementById('fileSelected').textContent = fileName;
+      });
+
+
+
+
+
+
+      // tambah mobil
+      document.getElementById('formTambahMobil').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = {
+          model: document.getElementById('model').value,
+          merek: document.getElementById('merek').value,
+          harga: document.getElementById('harga').value,
+          tahun: document.getElementById('tahun').value,
+          stok: document.getElementById('stok').value,
+          tipe_mesin: document.getElementById('tipe_mesin').value,
+          tenaga: document.getElementById('tenaga').value,
+          torsi: document.getElementById('torsi').value,
+          sistem_penggerak: document.getElementById('sistem_penggerak').value,
+          fitur_keamanan: document.getElementById('fitur_keamanan').value,
+          sistem_hiburan: document.getElementById('sistem_hiburan').value,
+          konektivitas: document.getElementById('konektivitas').value,
+          ac: document.getElementById('ac').value,
+          gambar: document.getElementById('gambar').files[0]
+        };
+
+        const formDataToSend = new FormData();
+        for (const key in formData) {
+          if (formData[key] !== null && formData[key] !== undefined) {
+            formDataToSend.append(key, formData[key]);
+          }
+        }
+
+        const token = sessionStorage.getItem('authToken');
+
+        try {
+          const response = await fetch('http://localhost:8080/mobil/create', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formDataToSend
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            await Swal.fire({
+              icon: 'success',
+              title: 'Berhasil',
+              text: 'Data mobil berhasil ditambahkan!',
+              confirmButtonColor: '#3085d6'
+            });
+            closeModal();
+            fetchMobilData(); // Refresh the car list
+          } else {
+            await Swal.fire({
+              icon: 'error',
+              title: 'Gagal Menambahkan Mobil',
+              text: data.message || 'Terjadi kesalahan saat menambahkan data.',
+              confirmButtonColor: '#d33'
+            });
+
+            if (data.errors) {
+              console.error('Validation errors:', data.errors);
+            }
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          await Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan',
+            text: 'Terjadi kesalahan saat mengirim data.',
+            confirmButtonColor: '#d33'
+          });
+        }
+      });
+
+
+      // Update the add button click handler
+      document.querySelector('.add-btn').onclick = openTambahMobilModal;
+
+      // Close modal if user clicks outside of it
+      window.onclick = function (event) {
+        const modal = document.getElementById('tambahMobilModal');
+        if (event.target === modal) {
+          closeModal();
+        }
+      }
+
+
+
+
+      // api
+      const apiUrl = 'http://localhost:8080/mobil';
+
+      // fungsi untuk escape HTML karakter
+      function escapeHtml(text) {
+        if (!text) return '';
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+
+      // fungsi untuk load mobil
+      // function fetchMobilData() {
+      //   // Ambil token dari localStorage atau tempat penyimpanan lainnya
+      //   const token = sessionStorage.getItem('authToken'); // atau sessionStorage, cookies, dll.
+
+      //   if (!token) {
+      //     alert('Anda belum login atau token tidak tersedia');
+      //     return;
+      //   }
+
+      //   fetch(apiUrl, {
+      //     headers: {
+      //       'Authorization': `Bearer ${token}`,
+      //       'Content-Type': 'application/json'
+      //     }
+      //   })
+      //     .then(res => {
+      //       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      //       return res.json();
+      //     })
+      //     .then(data => {
+      //       const container = document.getElementById("mobil-container");
+      //       container.innerHTML = "";
+
+      //       if (!Array.isArray(data.data)) {
+      //         throw new Error("Data received is not an array");
+      //       }
+
+      //       data.data.forEach(mobil => {
+      //         const card = document.createElement("div");
+      //         card.className = "card";
+
+      //         const merek = escapeHtml(mobil.merek);
+      //         const model = escapeHtml(mobil.model);
+      //         const harga = `Rp. ${Number(mobil.harga).toLocaleString('id-ID')}`;
+      //         const tahun = escapeHtml(mobil.tahun);
+      //         const transmisi = escapeHtml(mobil.sistem_penggerak);
+      //         const cc = escapeHtml(mobil.tipe_mesin);
+
+      //         card.innerHTML = `
+      //           <div class="card-actions">
+      //               <button class="edit" onclick="editMobil(${mobil.id})">✏️</button>
+      //               <button class="delete" onclick="deleteMobil(${mobil.id})">🗑️</button>
+      //           </div>
+      //           <h4>${merek} ${model}</h4>
+      //           <h2>${merek} ${model}</h2>
+      //           <div class="price">${harga}</div>
+      //           <div class="card-details">📅 ${tahun} &nbsp; ⚙️ ${transmisi} &nbsp; 🛠️ ${cc} CC</div>
+      //           <a href="#" class="btn-detail" onclick="viewDetail(${mobil.id})">Lihat Detail</a>
+      //       `;
+
+      //         container.appendChild(card);
+      //       });
+      //     })
+      //     .catch(error => {
+      //       console.error("Error loading mobil data:", error);
+      //       alert("Gagal memuat data mobil. Silakan coba lagi.");
+      //     });
+      // }
+      let allData = [];
+
+      function fetchMobilData() {
+        const token = sessionStorage.getItem('authToken');
+
+        if (!token) {
+          alert('Anda belum login atau token tidak tersedia');
+          return;
+        }
+
+        fetch('http://localhost:8080/mobil/all', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+          .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+          })
+          .then(res => {
+            if (res.status && Array.isArray(res.data)) {
+              allData = res.data[0]; // Pastikan ini sesuai struktur dari API kamu
+              populateFilters(allData); // Isi filter
+              displayData(allData);     // Tampilkan data
+            } else {
+              throw new Error("Data tidak valid atau kosong");
+            }
+          })
+          .catch(error => {
+            console.error("Gagal mengambil data:", error);
+            alert("Gagal memuat data mobil. Silakan coba lagi.");
+          });
+      }
+
+
+
+
+
+
+      // lihat detail
+      function viewDetail(id) {
+        currentMobilId = id;
+        const token = sessionStorage.getItem('authToken');
+        fetch(`http://localhost:8080/mobil/detail/${id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json"
+          }
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error("Gagal mengambil data dari server. Status: " + response.status);
+            }
+            return response.json();
+          })
+          .then(result => {
+            const data = result.data; // Ambil objek data di dalam respons
+
+            console.log("Data Tenaga:", data.tenaga);  // Cek nilai tenaga
+            console.log("Data Torsi:", data.torsi);
+            document.getElementById("modalDetailLabel").textContent = `${data.merek} ${data.model}`;
+            document.getElementById("hargaMobil").textContent = data.harga;
+            document.getElementById("stokMobil").textContent = data.stok;
+            document.getElementById("gambarMobil").src = data.gambar || 'default.jpg';
+
+            document.getElementById("tipeMesin").textContent = data.tipe_mesin || '-';
+            document.getElementById("tenaga").textContent =
+              data.tenaga ? data.tenaga.replace(/&quot;/g, '"') : '-';
+            document.getElementById("torsi").textContent =
+              data.torsi ? data.torsi.replace(/&amp;/g, '&') : '-';
+            document.getElementById("penggerak").textContent = data.sistem_penggerak || '-';
+
+            document.getElementById("fiturKeamanan").textContent = data.fitur_keamanan || '-';
+            document.getElementById("hiburan").textContent = data.sistem_hiburan || '-';
+            document.getElementById("konektivitas").textContent = data.konektivitas || '-';
+            document.getElementById("ac").textContent = data.ac || '-';
+
+            const modal = new bootstrap.Modal(document.getElementById('modalDetail'));
+            modal.show();
+          })
+          .catch(error => {
+            console.error("Error:", error);
+            alert("Gagal memuat detail mobil. Pastikan token valid.");
+          });
+      }
+
+
+      let currentMobilId = null;
+      // Alternatif menggunakan event listener (pilih salah satu)
+      document.addEventListener('DOMContentLoaded', function () {
+        const btnEdit = document.getElementById('btnEditDetail');
+        const btnDelete = document.getElementById('btnDeleteDetail');
+
+        btnEdit.addEventListener('click', function () {
+          if (currentMobilId) {
+            // Tutup modal detail terlebih dahulu
+            const modalDetail = bootstrap.Modal.getInstance(document.getElementById('modalDetail'));
+            if (modalDetail) {
+              modalDetail.hide();
+            }
+
+            // Tunggu modal detail tertutup sepenuhnya, lalu buka modal edit
+            document.getElementById('modalDetail').addEventListener('hidden.bs.modal', function openEditModal() {
+              editMobil(currentMobilId);
+              // Hapus event listener ini setelah dijalankan sekali
+              document.getElementById('modalDetail').removeEventListener('hidden.bs.modal', openEditModal);
+            });
+          }
+        });
+
+        btnDelete.addEventListener('click', function () {
+          if (currentMobilId) {
+            // Tutup modal detail terlebih dahulu
+            const modalDetail = bootstrap.Modal.getInstance(document.getElementById('modalDetail'));
+            if (modalDetail) {
+              modalDetail.hide();
+            }
+
+            // Tunggu modal detail tertutup sepenuhnya, lalu jalankan delete
+            document.getElementById('modalDetail').addEventListener('hidden.bs.modal', function runDelete() {
+              deleteMobil(currentMobilId);
+              // Hapus event listener ini setelah dijalankan sekali
+              document.getElementById('modalDetail').removeEventListener('hidden.bs.modal', runDelete);
+            });
+          }
+        });
+      });
+
+
+
+
+
+      // Fungsi untuk membuka modal edit
+      function openEditModal() {
+        document.getElementById('editMobilModal').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+      }
+
+      // Fungsi untuk menutup modal edit
+      function closeEditModal() {
+        document.getElementById('editMobilModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+
+      // Handle file input untuk edit
+      document.getElementById('edit_gambar').addEventListener('change', function (e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'No File Selected';
+        document.getElementById('edit_fileSelected').textContent = fileName;
+      });
+
+      // Fungsi untuk mengisi form edit dengan data mobil
+      async function editMobil(id) {
+        const token = sessionStorage.getItem('authToken');
+
+        try {
+          const response = await fetch(`http://localhost:8080/mobil/detail/${id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Gagal mengambil data mobil');
+          }
+
+          const data = await response.json();
+          const mobil = data.data;
+
+          // Isi form dengan data mobil
+          document.getElementById('edit_id').value = mobil.id;
+          document.getElementById('edit_merek').value = mobil.merek;
+          document.getElementById('edit_model').value = mobil.model;
+          document.getElementById('edit_tahun').value = mobil.tahun;
+          document.getElementById('edit_harga').value = mobil.harga;
+          document.getElementById('edit_stok').value = mobil.stok;
+          document.getElementById('edit_tipe_mesin').value = mobil.tipe_mesin
+          document.getElementById('edit_tenaga').value = mobil.tenaga;
+          document.getElementById('edit_torsi').value = mobil.torsi;
+          document.getElementById('edit_sistem_penggerak').value = mobil.sistem_penggerak;
+          document.getElementById('edit_fitur_keamanan').value = mobil.fitur_keamanan;
+          document.getElementById('edit_sistem_hiburan').value = mobil.sistem_hiburan;
+          document.getElementById('edit_konektivitas').value = mobil.konektivitas;
+          document.getElementById('edit_ac').value = mobil.ac;
+
+          // Tampilkan gambar saat ini
+          const imageContainer = document.getElementById('currentImageContainer');
+          if (mobil.gambar) {
+            imageContainer.innerHTML = `<img src="http://localhost:8080/uploads/${mobil.gambar}" alt="${mobil.merek} ${mobil.model}" style="max-width: 100px; max-height: 100px;">`;
+          } else {
+            imageContainer.innerHTML = '<p>Tidak ada gambar</p>';
+          }
+
+          openEditModal();
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Gagal memuat data mobil: ' + error.message);
+        }
+      }
+
+      // Fungsi untuk menghandle submit form edit
+      document.getElementById('formEditMobil').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const id = document.getElementById('edit_id').value;
+        const token = sessionStorage.getItem('authToken');
+        const gambarFile = document.getElementById('edit_gambar').files[0];
+
+        const formDataToSend = new FormData();
+
+        formDataToSend.append('merek', document.getElementById('edit_merek').value);
+        formDataToSend.append('model', document.getElementById('edit_model').value);
+        formDataToSend.append('tahun', document.getElementById('edit_tahun').value);
+        formDataToSend.append('harga', document.getElementById('edit_harga').value);
+        formDataToSend.append('stok', parseInt(document.getElementById('edit_stok').value));
+
+        formDataToSend.append('tipe_mesin', document.getElementById('edit_tipe_mesin').value);
+        formDataToSend.append('tenaga', document.getElementById('edit_tenaga').value);
+        formDataToSend.append('torsi', document.getElementById('edit_torsi').value);
+        formDataToSend.append('sistem_penggerak', document.getElementById('edit_sistem_penggerak').value);
+        formDataToSend.append('fitur_keamanan', document.getElementById('edit_fitur_keamanan').value);
+        formDataToSend.append('sistem_hiburan', document.getElementById('edit_sistem_hiburan').value);
+        formDataToSend.append('konektivitas', document.getElementById('edit_konektivitas').value);
+        formDataToSend.append('ac', document.getElementById('edit_ac').value);
+
+        if (gambarFile) {
+          formDataToSend.append('gambar', gambarFile);
+        }
+
+        formDataToSend.append('_method', 'PUT');
+
+        console.log([...formDataToSend.entries()]);
+
+        try {
+          const response = await fetch(`http://localhost:8080/mobil/update/${id}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formDataToSend
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            if (data.message && typeof data.message === 'object') {
+              const errorMessages = Object.values(data.message).flat().join(', ');
+              throw new Error(errorMessages);
+            }
+            throw new Error(data.message || 'Gagal memperbarui mobil');
+          }
+
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Data mobil berhasil diperbarui',
+            confirmButtonColor: '#3085d6'
+          });
+
+          closeEditModal();
+          fetchMobilData();
+
+        } catch (error) {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan',
+            text: error.message,
+            confirmButtonColor: '#d33'
+          });
+        }
+      });
+
+
+
+
+      function deleteMobil(id) {
+        const token = sessionStorage.getItem('authToken');
+
+        Swal.fire({
+          title: 'Apakah Anda yakin?',
+          text: `Mobil dengan ID ${id} akan dihapus!`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Ya, hapus!',
+          cancelButtonText: 'Batal'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch("http://localhost:8080/mobil/delete/" + id, {
+              method: "DELETE",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+              }
+            })
+              .then(response => {
+                if (response.status === 404) {
+                  return response.json().then(data => {
+                    throw new Error(data.message || 'Data tidak ditemukan');
+                  });
+                }
+                if (response.status === 500) {
+                  return response.json().then(data => {
+                    throw new Error(data.message || 'Gagal menghapus data');
+                  });
+                }
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                return response.json();
+              })
+              .then(data => {
+                if (data.status === true) {
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message || 'Data berhasil dihapus!',
+                    confirmButtonColor: '#3085d6'
+                  });
+                  fetchMobilData();
+                } else {
+                  throw new Error(data.message || "Gagal menghapus data");
+                }
+              })
+              .catch(error => {
+                console.error("Terjadi kesalahan:", error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Gagal',
+                  text: error.message || "Terjadi kesalahan saat menghapus data.",
+                  confirmButtonColor: '#d33'
+                });
+              });
+          }
+        });
+      }
+
+
+
+
+
+      // fungsi filter data
+      function populateFilters(data) {
+        const merekSet = new Set();
+        const tahunSet = new Set();
+        const hargaSet = new Set();
+
+        data.forEach(item => {
+          merekSet.add(item.merek);
+          tahunSet.add(item.tahun);
+          hargaSet.add(item.harga);
+        });
+
+        fillSelect("filter-merek", Array.from(merekSet));
+        fillSelect("filter-tahun", Array.from(tahunSet).sort((a, b) => b - a));
+        fillSelect("filter-harga", ["<500 juta", "500-1 M", ">1 M"]);
+      }
+
+      function fillSelect(id, options) {
+        const select = document.getElementById(id);
+        options.forEach(opt => {
+          const option = document.createElement("option");
+          option.value = opt;
+          option.textContent = opt;
+          select.appendChild(option);
+        });
+      }
+
+      function applyFilter() {
+        const merek = document.getElementById("filter-merek").value;
+        const tahun = document.getElementById("filter-tahun").value;
+        const harga = document.getElementById("filter-harga").value;
+
+        const filtered = allData.filter(item => {
+          return (
+            (!merek || item.merek === merek) &&
+            (!tahun || item.tahun === tahun) &&
+            (!harga || filterHarga(item.harga, harga))
+          );
+        });
+
+        displayData(filtered);
+      }
+
+      function filterHarga(nilai, kategori) {
+        const harga = parseFloat(nilai);
+        if (kategori === "<500 juta") return harga < 500_000_000;
+        if (kategori === "500-1 M") return harga >= 500_000_000 && harga <= 1_000_000_000;
+        if (kategori === ">1 M") return harga > 1_000_000_000;
+        return true;
+      }
+
+      function formatRupiah(angka) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0
+        }).format(angka);
+      }
+
+
+      function resetFilter() {
+        document.getElementById("filter-merek").value = "";
+        document.getElementById("filter-tahun").value = "";
+        document.getElementById("filter-harga").value = "";
+        displayData(allData);
+      }
+
+      function displayData(data) {
+        const container = document.getElementById("mobil-container");
+        container.innerHTML = "";
+
+        data.forEach(mobil => {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const merek = escapeHtml(mobil.merek);
+          const model = escapeHtml(mobil.model);
+          const harga = `Rp. ${Number(mobil.harga).toLocaleString('id-ID')}`;
+          const tahun = escapeHtml(mobil.tahun);
+          const transmisi = escapeHtml(mobil.sistem_penggerak);
+          const cc = escapeHtml(mobil.tipe_mesin);
+
+          card.innerHTML = `
+            <div class="card-actions">
+              <button class="edit" onclick="editMobil(${mobil.id})">✏️</button>
+              <button class="delete" onclick="deleteMobil(${mobil.id})">🗑️</button>
+            </div>
+            <h4>${merek} ${model}</h4>
+            <h2>${merek} ${model}</h2>
+            <div class="price">${harga}</div>
+            <div class="card-details">📅 ${tahun} &nbsp; ⚙️ ${transmisi} &nbsp; 🛠️ ${cc} CC</div>
+            <a href="#" class="btn-detail" onclick="viewDetail(${mobil.id})">Lihat Detail</a>
+          `;
+
+          container.appendChild(card);
+        });
+      }
+
+
+
+
+
+      const logoutBtn = document.getElementById("logoutBtn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          sessionStorage.removeItem("authToken");
+          sessionStorage.removeItem("userData");
+          window.location.href = "../login.html";
+        });
+      }
+    </script>
+    <!-- <script src="/asset/js/global.js" defer></script> -->
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="../asset/bootstrap/js/bootstrap.min.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Data Garansi | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/sidebarpel.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <style>
+    .filter-box {
+      display: flex;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      gap: 1rem;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-box input,
+    .filter-box select {
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      flex: 1;
+      width: 200px;
+      height: 43px;
+      /* fix: samakan tinggi */
+      box-sizing: border-box;
+    }
+
+    .filter-box button {
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-reset {
+      background: #b91c1c;
+      color: white;
+    }
+
+    .btn-filter {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .btn-tambah {
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      float: right;
+    }
+
+    .btn-edit {
+      background: #facc15;
+      color: black;
+    }
+
+    .btn-detail {
+      background: #6366f1;
+      color: white;
+    }
+
+    .btn-delete {
+      background: #ef4444;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    <h1>MobilBagus</h1>
+    <div class="menu">
+      <div class="menu-item">
+        <a href="dashboard.html" class="menu-link"><span class="icon">🏠</span> Dashboard</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="manajemen-mobil.html" class="menu-link"><span class="icon">🚗</span> Manajemen Mobil</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('penjualan')">
+          <span class="menu-link"><span class="icon">📈</span> Penjualan</span>
+          <span class="arrow" id="arrow-penjualan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-penjualan">
+          <a href="data-penjualan.html">Data Penjualan</a>
+          <a href="daftar-pembayaran.html">Daftar Penjualan</a>
+          <a href="laporan.html">Laporan</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pelanggan.html" class="menu-link"><span class="icon">👥</span> Pelanggan</a>
+      </div>
+
+      <div class="menu-item">
+        <div class="menu-toggle" onclick="toggleMenu('layanan')">
+          <span class="menu-link"><span class="icon">🎧</span> Layanan</span>
+          <span class="arrow" id="arrow-layanan">▼</span>
+        </div>
+        <div class="submenu" id="submenu-layanan">
+          <a href="data-layanan.html">Data Layanan</a>
+          <a href="data-garansi.html">Data Garansi</a>
+          <a href="klaim-garansi.html">Klaim Garansi</a>
+        </div>
+      </div>
+
+      <div class="menu-item">
+        <a href="pengaturan.html" class="menu-link"><span class="icon">⚙️</span> Pengaturan</a>
+      </div>
+
+      <div class="menu-item">
+        <a href="#" id="logoutBtn" class="menu-link"><span class="icon">🚪</span> Keluar</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="header">
+      <div>☰</div>
+      <div class="admin">👤 Admin ▾</div>
+    </div>
+
+    <div class="filter-box">
+      <input type="text" id="filter-nama" placeholder="Semua Nama Pelanggan">
+      <select id="filter-status">
+        <option value="">Semua Status</option>
+        <option value="Belum Diklaim">Belum Diklaim</option>
+        <option value="Pending">Pending</option>
+        <option value="Diproses">Diproses</option>
+        <option value="Selesai">Selesai</option>
+        <option value="Ditolak">Ditolak</option>
+      </select>
+      <button class="btn-reset" onclick="resetFilter()">Batal</button>
+      <button class="btn-filter" onclick="applyFilter()">Filter</button>
+    </div>
+
+    <button class="btn-tambah" onclick="bukaModal()">Tambah Data</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nama</th>
+          <th>Mobil</th>
+          <th>Tanggal Mulai</th>
+          <th>Tanggal Akhir</th>
+          <th>Detail Garansi</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="garansi-table-body">
+
+      </tbody>
+    </table>
+
+
+
+    <!-- Modal Tambah Data -->
+    <div class="modal" id="modalTambah"
+      style="display:none; position:fixed; inset:0; background-color:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+      <div style="background:white; padding:2rem; border-radius:10px; width:600px; position:relative;">
+        <h4 style="margin-bottom: 1rem;">Tambah Data Garansi</h4>
+        <form id="formTambahGaransi">
+          <div style="display: flex; gap: 1rem;">
+            <!-- Kolom Kiri -->
+            <div style="flex: 1;">
+              <div class="mb-2">
+                <label for="namaPelanggan">Nama Pelanggan:</label>
+                <select id="namaPelanggan" required class="form-control"></select>
+              </div>
+              <div class="mb-2">
+                <label for="mobil">Mobil:</label>
+                <select id="mobil" required class="form-control"></select>
+              </div>
+              <div class="mb-2">
+                <label for="tanggalMulai">Tanggal Mulai:</label>
+                <input type="date" id="tanggalMulai" class="form-control" required>
+              </div>
+            </div>
+
+            <!-- Kolom Kanan -->
+            <div style="flex: 1;">
+              <div class="mb-2">
+                <label for="tanggalAkhir">Tanggal Akhir:</label>
+                <input type="date" id="tanggalAkhir" class="form-control">
+              </div>
+              <div class="mb-2">
+                <label for="detailGaransi">Detail Garansi:</label>
+                <textarea id="detailGaransi" class="form-control" rows="5" required></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem; text-align: right;">
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <button type="button" class="btn btn-secondary" onclick="tutupModal()">Batal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+
+    <!-- Modal Edit Data -->
+    <div class="modal" id="modalEdit"
+      style="display:none; position:fixed; inset:0; background-color:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+      <div style="background:white; padding:2rem; border-radius:10px; width:600px; position:relative;">
+        <h4 style="margin-bottom: 1rem;">Edit Data Garansi</h4>
+        <form id="formEditGaransi">
+          <input type="hidden" id="editIdGaransi">
+
+          <div style="display: flex; gap: 1rem;">
+            <!-- Kolom Kiri -->
+            <div style="flex: 1;">
+              <div class="mb-2">
+                <label for="editNamaPelanggan">Nama Pelanggan:</label>
+                <select id="editNamaPelanggan" required class="form-control"></select>
+              </div>
+              <div class="mb-2">
+                <label for="editMobil">Mobil:</label>
+                <select id="editMobil" required class="form-control"></select>
+              </div>
+              <div class="mb-2">
+                <label for="editTanggalMulai">Tanggal Mulai:</label>
+                <input type="date" id="editTanggalMulai" class="form-control" required>
+              </div>
+            </div>
+
+            <!-- Kolom Kanan -->
+            <div style="flex: 1;">
+              <div class="mb-2">
+                <label for="editTanggalAkhir">Tanggal Akhir:</label>
+                <input type="date" id="editTanggalAkhir" class="form-control">
+              </div>
+              <div class="mb-2">
+                <label for="editDetailGaransi">Detail Garansi:</label>
+                <textarea id="editDetailGaransi" class="form-control" rows="5" required></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem; text-align: right;">
+            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            <button type="button" class="btn btn-secondary" onclick="tutupModalEdit()">Batal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+
+
+
+    <div class="pagination">
+      <button class="disabled">Previous</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>Next</button>
+    </div>
+
+
+
+  </div>
+  </div>
+  <script>
+    const token = sessionStorage.getItem("authToken");
+    async function loadGaransiData() {
+      try {
+        const response = await fetch("http://localhost:8080/garansi", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const result = await response.json();
+
+        if (result.status && Array.isArray(result.data)) {
+          semuaDataGaransi = result.data;
+
+          const tableBody = document.getElementById("garansi-table-body");
+          tableBody.innerHTML = "";
+
+          semuaDataGaransi.forEach(item => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+          <td>${item.idg}</td>
+          <td>${item.nama}</td>
+          <td>${item.model}</td>
+          <td>${formatDate(item.tanggal_mulai)}</td>
+          <td>${item.tanggal_berakhir === "0000-00-00" ? "-" : formatDate(item.tanggal_berakhir)}</td>
+          <td>${item.detail_garansi}</td>
+          <td>${item.klaim_status}</td>
+          <td class="aksi">
+              <button class="btn-edit" onclick="bukaModalEdit('${item.idg}')">✏️</button>
+              <button class="btn-delete" onclick="hapusGaransi('${item.idg}')">🗑️</button>
+          </td>
+        `;
+
+            tableBody.appendChild(row);
+          });
+        } else {
+          alert("Data tidak ditemukan atau gagal.");
+        }
+      } catch (error) {
+        console.error("Gagal mengambil data:", error);
+      }
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? "-" : date.toLocaleDateString("id-ID");
+    }
+
+
+
+
+
+    function bukaModal() {
+      document.getElementById("modalTambah").style.display = "flex";
+      loadPelanggan();
+      loadMobil();
+    }
+
+    function tutupModal() {
+      document.getElementById("modalTambah").style.display = "none";
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    async function loadPelanggan() {
+      try {
+        const res = await fetch("http://localhost:8080/pelanggan", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const select = document.getElementById("namaPelanggan");
+
+        // Tambahkan option default
+        select.innerHTML = `<option value="">--Pilih Pelanggan--</option>`;
+
+        // Tambahkan data pelanggan
+        data.data.forEach(p => {
+          select.innerHTML += `<option value="${p.id}">${p.nama}</option>`;
+        });
+      } catch (e) {
+        console.error("Gagal load pelanggan", e);
+      }
+    }
+
+
+    async function loadMobil() {
+      try {
+        const res = await fetch("http://localhost:8080/mobil", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const select = document.getElementById("mobil");
+
+        select.innerHTML = `<option value="">--Pilih Mobil--</option>`;
+
+        data.data.forEach(m => {
+          select.innerHTML += `<option value="${m.id}">${m.model}</option>`;
+        });
+      } catch (e) {
+        console.error("Gagal load mobil", e);
+      }
+    }
+
+
+
+    document.getElementById("formTambahGaransi").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const payload = {
+        pelanggan_id: document.getElementById("namaPelanggan").value,
+        mobil_id: document.getElementById("mobil").value,
+        tanggal_mulai: document.getElementById("tanggalMulai").value,
+        tanggal_berakhir: document.getElementById("tanggalAkhir").value || "0000-00-00",
+        detail_garansi: document.getElementById("detailGaransi").value
+      };
+
+      try {
+        const res = await fetch("http://localhost:8080/garansi/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        if (result.status) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Data garansi berhasil ditambahkan!'
+          }).then(() => {
+            tutupModal();
+            loadGaransiData();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: result.message || 'Gagal menambahkan data.'
+          });
+        }
+      } catch (err) {
+        console.error("Error tambah data:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan Server',
+          text: 'Terjadi kesalahan saat mengirim data.'
+        });
+      }
+    });
+
+
+
+
+
+
+
+
+    function bukaModalEdit(idg) {
+      document.getElementById("modalEdit").style.display = "flex";
+      const data = semuaDataGaransi.find(item => item.idg === idg);
+
+      // Load dropdown data
+      loadPelangganEdit(data.pelanggan_id);
+      loadMobilEdit(data.mobil_id);
+
+      // Isi data ke dalam form
+      document.getElementById("editIdGaransi").value = data.idg;
+      document.getElementById("editTanggalMulai").value = data.tanggal_mulai;
+      document.getElementById("editTanggalAkhir").value = data.tanggal_berakhir === "0000-00-00" ? "" : data.tanggal_berakhir;
+      document.getElementById("editDetailGaransi").value = data.detail_garansi;
+    }
+
+    function tutupModalEdit() {
+      document.getElementById("modalEdit").style.display = "none";
+    }
+
+    async function loadPelangganEdit(selectedId) {
+      const res = await fetch("http://localhost:8080/pelanggan", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const select = document.getElementById("editNamaPelanggan");
+
+      select.innerHTML = `<option value="">--Pilih Pelanggan--</option>`;
+      data.data.forEach(p => {
+        select.innerHTML += `<option value="${p.id}" ${p.id == selectedId ? "selected" : ""}>${p.nama}</option>`;
+      });
+    }
+
+    async function loadMobilEdit(selectedId) {
+      const res = await fetch("http://localhost:8080/mobil", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const select = document.getElementById("editMobil");
+
+      select.innerHTML = `<option value="">--Pilih Mobil--</option>`;
+      data.data.forEach(m => {
+        select.innerHTML += `<option value="${m.id}" ${m.id == selectedId ? "selected" : ""}>${m.model}</option>`;
+      });
+    }
+
+    // Submit edit
+    document.getElementById("formEditGaransi").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const payload = {
+        idg: document.getElementById("editIdGaransi").value,
+        pelanggan_id: document.getElementById("editNamaPelanggan").value,
+        mobil_id: document.getElementById("editMobil").value,
+        tanggal_mulai: document.getElementById("editTanggalMulai").value,
+        tanggal_berakhir: document.getElementById("editTanggalAkhir").value || "0000-00-00",
+        detail_garansi: document.getElementById("editDetailGaransi").value
+      };
+
+      try {
+        const res = await fetch(`http://localhost:8080/garansi/update/${payload.idg}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+
+        if (result.status) {
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Data garansi berhasil diperbarui.',
+            confirmButtonColor: '#3085d6'
+          });
+          tutupModalEdit();
+          loadGaransiData();
+        } else {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: result.message || 'Gagal memperbarui data.',
+            confirmButtonColor: '#d33'
+          });
+        }
+
+      } catch (err) {
+        console.error("Gagal update data:", err);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan',
+          text: 'Terjadi kesalahan saat memperbarui data.',
+          confirmButtonColor: '#d33'
+        });
+      }
+    });
+
+
+
+
+
+
+    async function hapusGaransi(idg) {
+      const result = await Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: `Garansi dengan ID ${idg} akan dihapus secara permanen.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const res = await fetch(`http://localhost:8080/garansi/delete/${idg}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const result = await res.json();
+
+        if (result.status) {
+          await Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Data berhasil dihapus.',
+            confirmButtonColor: '#3085d6'
+          });
+          loadGaransiData();
+        } else {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: 'Gagal menghapus data.',
+            confirmButtonColor: '#d33'
+          });
+        }
+
+      } catch (err) {
+        console.error("Gagal menghapus:", err);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan',
+          text: 'Terjadi kesalahan saat menghapus data.',
+          confirmButtonColor: '#d33'
+        });
+      }
+    }
+
+
+
+
+
+    function applyFilter() {
+      const nama = document.getElementById('filter-nama').value.toLowerCase();
+      const status = document.getElementById('filter-status').value;
+
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const namaCell = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase();
+        const statusCell = row.querySelector('td:nth-child(7)')?.textContent;
+
+
+        const cocokNama = !nama || namaCell.includes(nama);
+        const cocokStatus = !status || statusCell === status;
+
+        row.style.display = (cocokNama && cocokStatus) ? '' : 'none';
+      });
+    }
+
+    function resetFilter() {
+      document.getElementById('filter-nama').value = '';
+      document.getElementById('filter-status').value = '';
+      applyFilter(); // Menampilkan semua kembali
+    }
+
+
+    // Jalankan saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", loadGaransiData);
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "../login.html";
+      });
+    }
+  </script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="../asset/bootstrap/js/bootstrap.min.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+
+</html>
