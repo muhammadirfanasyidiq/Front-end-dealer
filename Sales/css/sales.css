@@ -486,6 +486,19 @@ button {
   color: white;
 }
 
+.konfirmasi {
+  width: 100px;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  background-color: green;
+  color: white;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+}
+
 .pagination {
   display: flex;
   justify-content: center;

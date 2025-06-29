@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Data Penjualan | MobilBagus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/sales.css">
+  <link rel="stylesheet" href="../asset/bootstrap/css/bootstrap.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar" id="sidebar">
+    
+  </aside>
+  <div class="main">
+    <div class="header">
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-group">
+        <label for="filter-harga mb-3">Harga : </label>
+        <input type="date" class="form-control" placeholder="dd/mm/yy" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-merek">Merek : </label>
+        <select id="filter-merek">
+          <option class="form-control" value="">Semua Merek</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-tahun">Status Pembayaran :</label>
+        <select id="filter-tahun">
+          <option class="form-control" value="">Semua Status</option>
+        </select>
+      </div>
+      <!-- <div class="filter-box "> -->
+      <button class="cancel-button" onclick="resetFilter()">Batal</button>
+      <button class="filter-button" onclick="applyFilter()">Filter</button>
+      <!-- </div> -->
+    </div>
+
+
+    <h1>Data Penjualan Mobil</h1>
+    <table id="penjualanTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Pelanggan</th>
+          <th>Mobil</th>
+          <th>Nama Sales</th>
+          <th>Tanggal</th>
+          <th>Total Harga</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+
+      </tbody>
+    </table>
+
+
+
+
+    <div class="pagination">
+      <button disabled>Previous</button>
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>Next</button>
+    </div>
+  </div>
+  </div>
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+      fetchPenjualanData();
+    });
+
+    const token = sessionStorage.getItem('authToken');
+
+    let allPenjualanData = [];
+    // Fetch data penjualan
+    async function fetchPenjualanData() {
+      try {
+        const response = await fetch('http://localhost:8080/salespenjualan/jual', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status && data.data) {
+          allPenjualanData = data.data; // Simpan semua data
+          populateTable(data.data);
+          populateFilterOptions(data.data); // Populate filter options
+        } else {
+          throw new Error('Data tidak ditemukan atau format respons tidak valid');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Gagal memuat data penjualan: ' + error.message);
+      }
+    }
+
+
+
+
+
+
+
+    // Populate tabel dengan data
+    function populateTable(data) {
+      const tableBody = document.getElementById('tableBody');
+      tableBody.innerHTML = '';
+
+      data.forEach(item => {
+        const row = document.createElement('tr');
+
+        const formattedPrice = formatRupiah(item.total_harga);
+        const status = item.status_pembayaran ? item.status_pembayaran.toLowerCase() : 'batal';
+        let statusClass = 'batal';
+        let statusText = 'Batal';
+
+        if (status === 'selesai') {
+          statusClass = 'selesai';
+          statusText = 'Selesai';
+        } else if (status === 'proses') {
+          statusClass = 'proses';
+          statusText = 'Proses';
+        }
+
+        let konfirmasibtn = '';
+        if (status === 'proses') {
+          konfirmasibtn= `<buttpn class="konfirmasi" onclick="konfirmasiPembayaran('${item.id}')">Konfirmasi</button>`;
+        }
+        const transactionDate = new Date(item.tanggal_transaksi);
+        const formattedDate = `${transactionDate.getDate().toString().padStart(2, '0')}/${(transactionDate.getMonth() + 1).toString().padStart(2, '0')}/${transactionDate.getFullYear()}`;
+
+        row.innerHTML = `
+        <td>${item.id}</td>
+        <td>${item.nama}</td>
+        <td> ${item.merek} ${item.model}</td>
+        <td>${item.username}</td>
+        <td>${formattedDate}</td>
+        <td>Rp. ${formattedPrice}</td>
+        <td><span class="status ${statusClass}">${statusText}</span></td>
+        <td class="aksi-btn">
+          ${konfirmasibtn}
+        </td>
+      `;
+
+        tableBody.appendChild(row);
+      });
+    }
+
+
+    // Format rupiah
+    function formatRupiah(amount) {
+      const num = parseFloat(amount);
+      return num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    }
+
+
+  function konfirmasiPembayaran(id) {
+      if (!confirm("Konfirmasi pembayaran ini?")) return;
+
+      fetch(`http://localhost:8080/salespelanggan/konfirmasi/${id}`, {
+          method: 'PUT', // atau 'POST' sesuai backend
+          headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+          }
+      })
+      .then(res => res.json())
+      .then(data => {
+          alert(data.message);
+          if (data.status) {
+              // Update status langsung di halaman
+              const statusCell = document.getElementById(`status-${id}`);
+              if (statusCell) {
+                  statusCell.innerText = 'selesai';
+              }
+              fetchPenjualanData();
+          }
+      })
+      .catch(err => {
+          console.error(err);
+          alert('Gagal mengonfirmasi pembayaran.');
+      });
+  }
+
+
+
+
+
+
+
+
+
+
+
+    // Helper function untuk format currency input
+    function formatRupiahInput(amount) {
+      if (!amount) return '';
+      const num = parseFloat(amount);
+      return new Intl.NumberFormat('id-ID', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(num);
+    }
+
+
+    function populateFilterOptions(data) {
+      // Populate filter merek
+      const merekSet = new Set();
+      const statusSet = new Set();
+
+      data.forEach(item => {
+        if (item.merek) {
+          merekSet.add(item.merek);
+        }
+        if (item.status_pembayaran) {
+          statusSet.add(item.status_pembayaran);
+        }
+      });
+
+      const merekSelect = document.getElementById('filter-merek');
+      merekSelect.innerHTML = '<option value="">Semua Merek</option>';
+      Array.from(merekSet).sort().forEach(merek => {
+        merekSelect.innerHTML += `<option value="${merek}">${merek}</option>`;
+      });
+
+      // Populate status dropdown
+      const statusSelect = document.getElementById('filter-tahun');
+      statusSelect.innerHTML = '<option value="">Semua Status</option>';
+      Array.from(statusSet).sort().forEach(status => {
+        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+        statusSelect.innerHTML += `<option value="${status}">${statusText}</option>`;
+      });
+    }
+
+
+
+    // Function untuk apply filter (implementasi dasar)
+
+    function applyFilter() {
+      const filterTanggal = document.querySelector('input[type="date"]').value;
+      const filterMerek = document.getElementById('filter-merek').value;
+      const filterStatus = document.getElementById('filter-tahun').value;
+
+      let filteredData = allPenjualanData;
+
+      // Filter berdasarkan tanggal
+      if (filterTanggal) {
+        filteredData = filteredData.filter(item => {
+          const itemDate = new Date(item.tanggal_transaksi).toISOString().split('T')[0];
+          return itemDate === filterTanggal;
+        });
+      }
+
+      // Filter berdasarkan merek
+      if (filterMerek) {
+        filteredData = filteredData.filter(item =>
+          item.merek && item.merek.toLowerCase().includes(filterMerek.toLowerCase())
+        );
+      }
+
+      // Filter berdasarkan status
+      if (filterStatus) {
+        filteredData = filteredData.filter(item =>
+          item.status_pembayaran && item.status_pembayaran.toLowerCase() === filterStatus.toLowerCase()
+        );
+      }
+
+      // Update tabel dengan data yang sudah difilter
+
+      populateTable(filteredData);
+
+    }
+
+    // Function untuk reset filter
+    function resetFilter() {
+      document.querySelector('input[type="date"]').value = '';
+      document.getElementById('filter-merek').value = '';
+      document.getElementById('filter-tahun').value = '';
+      populateTable(allPenjualanData);
+    }
+
+
+
+
+
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("userData");
+        window.location.href = "../login.html";
+      });
+    }
+
+  
+  </script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="../asset/bootstrap/js/bootstrap.min.js" defer></script>
+  <script src="js/sales.js" defer></script>
+</body>
+
+</html>
