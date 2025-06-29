@@ -251,6 +251,10 @@
           statusText = 'Proses';
         }
 
+        let konfirmasibtn = '';
+        if (status === 'proses') {
+          konfirmasibtn= `<buttpn class="konfirmasi" onclick="konfirmasiPembayaran('${item.id}')">Konfirmasi</button>`;
+        }
         const transactionDate = new Date(item.tanggal_transaksi);
         const formattedDate = `${transactionDate.getDate().toString().padStart(2, '0')}/${(transactionDate.getMonth() + 1).toString().padStart(2, '0')}/${transactionDate.getFullYear()}`;
 
@@ -265,6 +269,7 @@
         <td class="aksi-btn">
           <button class="edit" onclick="editPenjualan('${item.id}')">✏️</button>
           <button class="delete" onclick="deletePenjualan('${item.id}')">🗑️</button>
+          ${konfirmasibtn}
         </td>
       `;
 
@@ -278,6 +283,35 @@
       const num = parseFloat(amount);
       return num.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
     }
+
+
+  function konfirmasiPembayaran(id) {
+      if (!confirm("Konfirmasi pembayaran ini?")) return;
+
+      fetch(`http://localhost:8080/penjualan/konfirmasi/${id}`, {
+          method: 'PUT', // atau 'POST' sesuai backend
+          headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+          }
+      })
+      .then(res => res.json())
+      .then(data => {
+          alert(data.message);
+          if (data.status) {
+              // Update status langsung di halaman
+              const statusCell = document.getElementById(`status-${id}`);
+              if (statusCell) {
+                  statusCell.innerText = 'selesai';
+              }
+              fetchPenjualanData();
+          }
+      })
+      .catch(err => {
+          console.error(err);
+          alert('Gagal mengonfirmasi pembayaran.');
+      });
+  }
 
 
 
